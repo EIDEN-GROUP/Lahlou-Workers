@@ -160,6 +160,40 @@
 @utility reveal-line { animation: line-up 800ms cubic-bezier(.2,.8,.2,1) both; }
 @utility photo-drift { animation: drift 34s linear infinite; }
 
+@utility split-cta {
+  position: relative;
+  isolation: isolate;
+  margin-right: 0.9rem;
+  border-radius: 999px;
+  padding-left: 1.35rem;
+  padding-right: 1.15rem;
+
+  &::after {
+    position: absolute;
+    right: -0.9rem;
+    z-index: -1;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 999px;
+    background: var(--primary);
+    content: "";
+    transition: background-color 300ms ease, transform 300ms ease;
+  }
+
+  &:hover::after { background: var(--primary-hover); }
+  &:hover svg { transform: translate(2px, -2px); }
+  & svg { margin-left: 0.35rem; transition: transform 300ms ease; }
+}
+
+@utility split-cta-dark {
+  background: var(--foreground);
+  color: var(--background);
+
+  &::after { background: var(--foreground); }
+  &:hover { background: var(--dark-surface); }
+  &:hover::after { background: var(--dark-surface); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
