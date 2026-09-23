@@ -26,9 +26,9 @@ export type StackedProject = {
 // How much the covered card shrinks and tilts (tweak to taste). No darkening
 // filter — the covered card stays fully colorful/legible while it recedes,
 // matching the reference (vault.hyperiux.com/demo/stacking-cards).
-const SCALE_TO = 0.8;
-const TILT_DEG = 5;
-const TILT_BACK_DEG = 14;
+const SCALE_TO = 0.92;
+const TILT_DEG = 2;
+const TILT_BACK_DEG = 6;
 const PERSPECTIVE = 1200;
 const CORNER_RADIUS = "3vw";
 
@@ -116,10 +116,10 @@ export function StackedProjects({ items, headerOffset = HEADER_OFFSET }: { items
               src={i % TONES.length === 0 ? LIGHT_DECOS[Math.floor(i / TONES.length) % LIGHT_DECOS.length] : tone.deco}
               alt=""
               aria-hidden
-              className={`pointer-events-none absolute inset-x-0 bottom-[18%] top-[30%] mx-auto hidden w-[70%] object-contain opacity-25 lg:block ${tone.blend}`}
+              className={`pointer-events-none absolute inset-x-0 bottom-[18%] top-[30%] mx-auto w-[85%] object-contain opacity-25 lg:w-[70%] ${tone.blend}`}
             />
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-              <h2 className="font-display text-[13vw] font-bold uppercase leading-[0.85] lg:text-[7vw]">{p.category}</h2>
+              <h2 className="font-display text-[9vw] font-bold uppercase leading-[0.9] sm:text-[7vw] lg:text-[7vw]">{p.category}</h2>
               <div className="aspect-[16/10] w-full overflow-hidden rounded-[2.5rem] lg:w-[40%]">
                 <img src={p.image} alt={p.title} loading="lazy" width={900} height={560} className="stack-card-img h-full w-full object-cover will-change-transform" />
               </div>

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring, useTransform, type Variants } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type Variants } from "motion/react";
 import { useRef, useState, type ReactNode } from "react";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -141,11 +141,14 @@ export function RevealImage({ src, alt, className, imgClassName }: { src: string
 // footer) is expected to be its own `position: sticky` sibling — that's what
 // makes it slide up and physically cover this section as the user keeps
 // scrolling, rather than anything being crossfaded or layered in here.
-export function PinnedCircleReveal({ children, className, scrollVh = 160, stopAt = "26vmax" }: { children: ReactNode; className?: string; scrollVh?: number; stopAt?: string }) {
+export function PinnedCircleReveal({ children, className, scrollVh = 240, stopAt = "26vmax" }: { children: ReactNode; className?: string; scrollVh?: number; stopAt?: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  // No spring here — a spring lags behind fast/continuous scroll and then has
+  // to "catch up" in a visible jump (exactly the bug this caused). Mapping
+  // straight off scrollYProgress over a wide range keeps it gradual without
+  // ever falling behind the actual scroll position.
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 45, damping: 18, mass: 0.9 });
-  const radius = useTransform(smoothProgress, [0.05, 0.55], ["150vmax", stopAt], { clamp: true });
+  const radius = useTransform(scrollYProgress, [0.05, 0.85], ["150vmax", stopAt], { clamp: true });
   const clipPath = useTransform(radius, r => `circle(${r} at 50% 50%)`);
 
   return (

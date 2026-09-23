@@ -122,7 +122,7 @@ export function SiteHeader({ variant = "light" }: { variant?: HeaderVariant }) {
             <motion.div className="grid w-full max-w-2xl" initial="hidden" animate="show" exit="hidden" variants={menuStagger}>
               {navLinks.map(([a, b], i) => <motion.a key={b} href={b} variants={menuItem} className="group flex items-baseline gap-5 border-b border-background/10 py-4 transition-colors hover:text-primary sm:py-5" onClick={() => setMenuOpen(false)}>
                 <span className="font-display text-xs font-bold text-background/40 transition-colors group-hover:text-primary">{String(i + 1).padStart(2, "0")}</span>
-                <span className="font-display text-[15vw] font-bold leading-[0.95] sm:text-[64px] lg:text-[80px]">{a}</span>
+                <span className="font-display text-[9vw] font-bold leading-[0.95] sm:text-[64px] lg:text-[80px]">{a}</span>
               </motion.a>)}
               <motion.div variants={menuItem} className="mt-10"><SplitButton href="/devis" onClick={() => setMenuOpen(false)}>Demander une équipe</SplitButton></motion.div>
             </motion.div>

@@ -76,10 +76,10 @@ function Index() {
 
   return <PageShell header="hero">
     <ScrollProgressBar />
-    <section className="relative h-svh overflow-hidden bg-foreground text-background">
+    <section className="relative h-svh overflow-hidden bg-foreground text-background lg:h-[78svh]">
       <HeroParallax src={heroImage} alt="Équipe Lahlou au travail sur un chantier à Agadir" />
       <div className="absolute inset-0 bg-gradient-to-b from-foreground/80 via-foreground/15 to-foreground/85" />
-      <div className="relative mx-auto flex h-svh max-w-[1440px] flex-col justify-end px-5 pb-12 pt-32 lg:px-8 lg:pb-16">
+      <div className="relative mx-auto flex h-svh max-w-[1440px] flex-col justify-end px-5 pb-12 pt-32 lg:h-[78svh] lg:px-8 lg:pb-10">
         <div className="grid items-end gap-10 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-8">
             <div className="overflow-hidden"><h1 className="reveal-line font-display text-[40px] font-bold uppercase leading-[0.95] sm:text-[52px] lg:text-[80px]">On construit avec</h1></div>
