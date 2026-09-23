@@ -1,17 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { LayoutDashboard, MessageSquare, FileText, Users, Building2, LogOut } from "lucide-react";
-
-const AUTH_KEY = "lahlou_admin_session";
-
-export function isAdminAuthed() {
-  return typeof window !== "undefined" && window.localStorage.getItem(AUTH_KEY) === "1";
-}
-
-export function setAdminAuthed(v: boolean) {
-  if (v) window.localStorage.setItem(AUTH_KEY, "1");
-  else window.localStorage.removeItem(AUTH_KEY);
-}
+import { adminMe, logout } from "@/lib/backend/functions";
 
 const navItems = [
   { to: "/admin", label: "Aperçu", icon: LayoutDashboard },
@@ -23,31 +13,47 @@ const navItems = [
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: s => s.location.pathname });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    if (!isAdminAuthed()) {
-      navigate({ to: "/admin/login" });
-    } else {
-      setChecked(true);
-    }
+    let live = true;
+    adminMe()
+      .then((r) => {
+        if (!live) return;
+        if (!r.authed) navigate({ to: "/admin/login" });
+        else setChecked(true);
+      })
+      .catch(() => navigate({ to: "/admin/login" }));
+    return () => {
+      live = false;
+    };
   }, [navigate]);
 
-  if (!checked) return <div className="flex min-h-svh items-center justify-center bg-foreground text-background">Chargement…</div>;
+  if (!checked)
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-foreground text-background">
+        Chargement…
+      </div>
+    );
 
   return (
-    <div className="flex min-h-svh bg-secondary text-foreground">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-background px-4 py-6">
-        <div className="mb-8 px-2 font-display text-lg font-bold">
-          lah<span className="text-primary">l</span>ou <span className="block text-sm font-semibold text-muted-foreground">Admin</span>
+    <div className="flex min-h-svh flex-col bg-secondary text-foreground lg:flex-row">
+      <aside className="flex shrink-0 flex-row items-center gap-2 overflow-x-auto border-b border-border bg-background px-4 py-4 lg:w-60 lg:flex-col lg:items-stretch lg:border-b-0 lg:border-r lg:px-4 lg:py-6">
+        <div className="mb-0 px-2 font-display text-lg font-bold lg:mb-8">
+          lah<span className="text-primary">l</span>ou{" "}
+          <span className="block text-sm font-semibold text-muted-foreground">Admin</span>
         </div>
-        <nav className="grid gap-1">
-          {navItems.map(item => {
+        <nav className="flex gap-1 lg:grid">
+          {navItems.map((item) => {
             const active = pathname === item.to;
             const Icon = item.icon;
             return (
-              <Link key={item.to} to={item.to} className={`flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}>
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 whitespace-nowrap px-3 py-2.5 text-sm font-semibold transition-colors ${active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`}
+              >
                 <Icon className="h-4 w-4" />
                 {item.label}
               </Link>
@@ -55,8 +61,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <button
-          onClick={() => { setAdminAuthed(false); navigate({ to: "/admin/login" }); }}
-          className="mt-auto flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-muted-foreground hover:text-primary"
+          onClick={async () => {
+            try {
+              await logout();
+            } finally {
+              navigate({ to: "/admin/login" });
+            }
+          }}
+          className="ml-auto flex items-center gap-3 px-3 py-2.5 text-sm font-semibold text-muted-foreground hover:text-primary lg:ml-0 lg:mt-auto"
         >
           <LogOut className="h-4 w-4" /> Déconnexion
         </button>

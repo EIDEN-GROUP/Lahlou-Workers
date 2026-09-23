@@ -50,5 +50,33 @@ Prefer working locally? You need Node.js and npm — [install with nvm](https://
 git clone <this-repository-url>
 cd <repository-name>
 npm i
+cp .env.example .env   # fill in Supabase + SMTP + admin secrets
 npm run dev
 ```
+
+## Production (Vercel + Supabase + Nodemailer)
+
+Company identity is centralized in `src/lib/site.ts` (sourced from
+[Charika](https://www.charika.ma/societe-lahlou-workers-1144714),
+[Tachrone](https://tachrone.ma/fr/profil/lahlou-workers/4672),
+[LinkedIn](https://www.linkedin.com/company/lahlou-workersconstruction/) and
+[Instagram](https://www.instagram.com/lahlou.workers/)).
+
+1. **Supabase**: create a project, run `supabase/schema.sql` in the SQL editor,
+   create a public bucket `project-images` (see comments at the bottom of the schema).
+2. **Env**: copy `.env.example` to Vercel env vars:
+   `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (server only, never `VITE_`),
+   `ADMIN_PASSWORD_HASH` (generate: `node -e "console.log(require('bcryptjs').hashSync(' strong-password', 12))"`),
+   `ADMIN_SESSION_SECRET` (32+ random chars), `SMTP_*` / `MAIL_*` (e.g. Gmail app password),
+   `VITE_WHATSAPP_NUMBER` + `PUBLIC_WHATSAPP_NUMBER` once the real number is known
+   (Tachrone hides it behind login — WhatsApp button falls back to `/contact` until set).
+3. **Deploy**: push to `main` (Vercel builds with `vite build`, nitro auto-targets `vercel`;
+   security headers in `vercel.json`). CI (`.github/workflows/ci.yml`) runs
+   `tsc --noEmit` + `eslint` + `vite build`.
+4. **Admin**: single admin at `/admin/login` (HttpOnly signed cookie, 12 h).
+   All `list*/delete*` server functions require the session; public writes are
+   zod-validated, rate-limited, honeypot-protected, and trigger a Nodemailer
+   notification to `MAIL_TO`.
+5. **SEO/GEO/AEO**: `lang="fr"`, canonical + OG/Twitter + geo meta, JSON-LD
+   (GeneralContractor + WebSite + FAQ), `sitemap.xml`, `robots.txt`
+   (`Disallow: /admin`), `manifest.webmanifest`, `llms.txt` for AI answers.

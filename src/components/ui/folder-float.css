@@ -67,7 +67,9 @@
   background: var(--ff-paper);
   opacity: 0;
   transform: translateY(10px);
-  transition: transform var(--ff-close) var(--ff-ease-out), opacity var(--ff-close) ease;
+  transition:
+    transform var(--ff-close) var(--ff-ease-out),
+    opacity var(--ff-close) ease;
 }
 
 .folder-float__front {
@@ -117,6 +119,7 @@
   background: transparent;
   cursor: pointer;
   outline: none;
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -127,7 +130,9 @@
 .folder-float[data-open] .folder-float__paper {
   opacity: 1;
   transform: translateY(0);
-  transition: transform var(--ff-open) var(--ff-ease-out), opacity 200ms ease;
+  transition:
+    transform var(--ff-open) var(--ff-ease-out),
+    opacity 200ms ease;
 }
 
 .folder-float__items {
@@ -171,10 +176,13 @@
   transform: translate(-50%, 44px) scale(0.6);
   transform-origin: 50% 50%;
   pointer-events: none;
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition:
-    transform var(--ff-close) var(--ff-ease-out) calc((var(--ff-n) - 1 - var(--i)) * var(--ff-stagger) * 0.5),
-    opacity 160ms ease calc((var(--ff-n) - 1 - var(--i)) * var(--ff-stagger) * 0.5 + var(--ff-close) * 0.45),
+    transform var(--ff-close) var(--ff-ease-out)
+      calc((var(--ff-n) - 1 - var(--i)) * var(--ff-stagger) * 0.5),
+    opacity 160ms ease
+      calc((var(--ff-n) - 1 - var(--i)) * var(--ff-stagger) * 0.5 + var(--ff-close) * 0.45),
     scale 160ms var(--ff-ease-out);
 }
 
@@ -231,13 +239,22 @@
 }
 
 @keyframes folder-float-drift {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -3px; }
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
 }
 
 @keyframes folder-float-pop {
-  30% { scale: 1.1; }
-  100% { scale: 1; }
+  30% {
+    scale: 1.1;
+  }
+  100% {
+    scale: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

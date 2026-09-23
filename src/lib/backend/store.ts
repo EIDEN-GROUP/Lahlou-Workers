@@ -33,7 +33,10 @@ export async function listItems<T>(name: string): Promise<T[]> {
   return readCollection<T>(name);
 }
 
-export async function appendItem<T extends { id: string; createdAt: string }>(name: string, item: T): Promise<T> {
+export async function appendItem<T extends { id: string; createdAt: string }>(
+  name: string,
+  item: T,
+): Promise<T> {
   const items = await readCollection<T>(name);
   items.unshift(item);
   await writeCollection(name, items);
@@ -42,7 +45,10 @@ export async function appendItem<T extends { id: string; createdAt: string }>(na
 
 export async function deleteItem(name: string, id: string): Promise<void> {
   const items = await readCollection<{ id: string }>(name);
-  await writeCollection(name, items.filter(i => i.id !== id));
+  await writeCollection(
+    name,
+    items.filter((i) => i.id !== id),
+  );
 }
 
 export function makeId(): string {

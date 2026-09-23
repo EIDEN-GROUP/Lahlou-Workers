@@ -1,5 +1,13 @@
 import Matter from "matter-js";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import "./folder-float.css";
 
 const { Bodies, Body, Composite, Engine } = Matter;
@@ -18,7 +26,13 @@ const jitter = (i: number) => {
   return x - Math.floor(x);
 };
 
-const layout = (list: { label: string; value: string }[], spread: number, lift: number, tilt: number, sizes: { w: number; h: number }[]) => {
+const layout = (
+  list: { label: string; value: string }[],
+  spread: number,
+  lift: number,
+  tilt: number,
+  sizes: { w: number; h: number }[],
+) => {
   const rows: { items: { i: number; pw: number }[]; width: number }[] = [];
   let row: { i: number; pw: number }[] = [];
   let width = 0;
@@ -39,7 +53,11 @@ const layout = (list: { label: string; value: string }[], spread: number, lift: 
     const shift = (ri % 2 ? 1 : -1) * Math.min(16, spread * 0.1);
     r.items.forEach(({ i, pw }) => {
       const j = jitter(i);
-      pos[i] = { x: x + pw / 2 + shift + (j - 0.5) * 6, y: -lift - ri * ROW - j * 6, r: tilt * (j * 2 - 1) };
+      pos[i] = {
+        x: x + pw / 2 + shift + (j - 0.5) * 6,
+        y: -lift - ri * ROW - j * 6,
+        r: tilt * (j * 2 - 1),
+      };
       x += pw + GAP;
     });
   });
@@ -112,7 +130,9 @@ export function FolderFloat({
   // The pills spread ±spread px from the folder's anchor point, which sits near the
   // left edge of the page on mobile — an unclamped spread pushes pills off both
   // sides of a narrow viewport, so it's capped relative to window width.
-  const [viewportWidth, setViewportWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1280));
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth : 1280,
+  );
   useEffect(() => {
     const onResize = () => setViewportWidth(window.innerWidth);
     window.addEventListener("resize", onResize);
@@ -122,7 +142,8 @@ export function FolderFloat({
   // On a short/narrow phone screen the pills floating upward by `lift` can climb
   // straight into whatever heading sits above the widget — shrink the float height
   // (and the row spacing that stacks on top of it) well below the desktop default.
-  const effectiveLift = viewportWidth < 640 ? Math.min(lift, 14) : viewportWidth < 1280 ? Math.min(lift, 20) : lift;
+  const effectiveLift =
+    viewportWidth < 640 ? Math.min(lift, 14) : viewportWidth < 1280 ? Math.min(lift, 20) : lift;
   const anchorRef = useRef<HTMLDivElement>(null);
   const pillRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const world = useRef<{
@@ -132,26 +153,56 @@ export function FolderFloat({
     raf: number;
     last: number;
     t0: number;
-    drag: { i: number; id: number; dx: number; dy: number; sx: number; sy: number; moved: boolean } | null;
+    drag: {
+      i: number;
+      id: number;
+      dx: number;
+      dy: number;
+      sx: number;
+      sy: number;
+      moved: boolean;
+    } | null;
     zone: { left: number; right: number; top: number; bottom: number } | null;
     live: boolean;
-  }>({ engine: null, bodies: [], sizes: [], raf: 0, last: 0, t0: 0, drag: null, zone: null, live: false });
+  }>({
+    engine: null,
+    bodies: [],
+    sizes: [],
+    raf: 0,
+    last: 0,
+    t0: 0,
+    drag: null,
+    zone: null,
+    live: false,
+  });
   const latest = useRef({ onSelect, onOpenChange, drift, reduce: false });
   latest.current = { onSelect, onOpenChange, drift, reduce: latest.current.reduce };
   const popTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const liveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const list = items.map(item => (typeof item === "string" ? { label: item, value: item } : item));
+  // Sync mirror of `open` for event handlers (avoids stale closures on rapid taps).
+  const openRef = useRef(defaultOpen);
+  // Pill index whose pointerup already fired a pick — the trailing click event
+  // of the same tap must not pick a second time.
+  const suppressClickPick = useRef<number | null>(null);
+  const list = items.map((item) =>
+    typeof item === "string" ? { label: item, value: item } : item,
+  );
   const n = list.length;
   const sub = sublabel || `${n} ${n === 1 ? "métier" : "métiers"}`;
   const pos = layout(list, effectiveSpread, effectiveLift, tilt, sizes);
 
-  const labelsKey = list.map(item => item.label).join("|");
+  const labelsKey = list.map((item) => item.label).join("|");
   useLayoutEffect(() => {
     const measure = () => {
-      const next = pillRefs.current.slice(0, n).map(el => (el ? { w: el.offsetWidth, h: el.offsetHeight } : null));
-      if (next.some(s => !s)) return;
-      setSizes(prev =>
-        prev.length === next.length && prev.every((s, i) => s.w === next[i]!.w && s.h === next[i]!.h) ? prev : (next as { w: number; h: number }[]),
+      const next = pillRefs.current
+        .slice(0, n)
+        .map((el) => (el ? { w: el.offsetWidth, h: el.offsetHeight } : null));
+      if (next.some((s) => !s)) return;
+      setSizes((prev) =>
+        prev.length === next.length &&
+        prev.every((s, i) => s.w === next[i]!.w && s.h === next[i]!.h)
+          ? prev
+          : (next as { w: number; h: number }[]),
       );
     };
     measure();
@@ -185,17 +236,17 @@ export function FolderFloat({
     const w = world.current;
     if (w.engine) return;
     const els = pillRefs.current.slice(0, n);
-    if (els.some(el => !el)) return;
+    if (els.some((el) => !el)) return;
     const engine = Engine.create({ gravity: { x: 0, y: 0 } });
     engine.enableSleeping = false;
     w.engine = engine;
-    w.sizes = els.map(el => ({ w: el!.offsetWidth, h: el!.offsetHeight }));
-    const ys = pos.map(p => p.y);
+    w.sizes = els.map((el) => ({ w: el!.offsetWidth, h: el!.offsetHeight }));
+    const ys = pos.map((p) => p.y);
     const zone = {
       left: -effectiveSpread - ZONE_PAD,
       right: effectiveSpread + ZONE_PAD,
       top: Math.min(...ys) - ZONE_PAD,
-      bottom: -effectiveLift + Math.max(...w.sizes.map(s => s.h)),
+      bottom: -effectiveLift + Math.max(...w.sizes.map((s) => s.h)),
     };
     w.zone = zone;
     w.bodies = els.map((el, i) => {
@@ -212,10 +263,34 @@ export function FolderFloat({
     });
     const T = 80;
     const walls = [
-      Bodies.rectangle((zone.left + zone.right) / 2, zone.top - T / 2, zone.right - zone.left + 2 * T, T, { isStatic: true }),
-      Bodies.rectangle((zone.left + zone.right) / 2, zone.bottom + T / 2, zone.right - zone.left + 2 * T, T, { isStatic: true }),
-      Bodies.rectangle(zone.left - T / 2, (zone.top + zone.bottom) / 2, T, zone.bottom - zone.top + 2 * T, { isStatic: true }),
-      Bodies.rectangle(zone.right + T / 2, (zone.top + zone.bottom) / 2, T, zone.bottom - zone.top + 2 * T, { isStatic: true }),
+      Bodies.rectangle(
+        (zone.left + zone.right) / 2,
+        zone.top - T / 2,
+        zone.right - zone.left + 2 * T,
+        T,
+        { isStatic: true },
+      ),
+      Bodies.rectangle(
+        (zone.left + zone.right) / 2,
+        zone.bottom + T / 2,
+        zone.right - zone.left + 2 * T,
+        T,
+        { isStatic: true },
+      ),
+      Bodies.rectangle(
+        zone.left - T / 2,
+        (zone.top + zone.bottom) / 2,
+        T,
+        zone.bottom - zone.top + 2 * T,
+        { isStatic: true },
+      ),
+      Bodies.rectangle(
+        zone.right + T / 2,
+        (zone.top + zone.bottom) / 2,
+        T,
+        zone.bottom - zone.top + 2 * T,
+        { isStatic: true },
+      ),
     ];
     Composite.add(engine.world, [...w.bodies, ...walls]);
     w.live = true;
@@ -248,12 +323,17 @@ export function FolderFloat({
     };
     w.raf = requestAnimationFrame(tick);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n, effectiveSpread, effectiveLift, pos.map(p => `${p.x},${p.y}`).join("|")]);
+  }, [n, effectiveSpread, effectiveLift, pos.map((p) => `${p.x},${p.y}`).join("|")]);
 
   const set = useCallback(
     (next: boolean) => {
       if (!next) stopPhysics();
-      setOpen(prev => {
+      openRef.current = next;
+      // A fresh open clears any stale suppression (a previous tap's click
+      // never arrived). Never clear on close: the close itself may follow a
+      // pointerup pick whose trailing click still has to be swallowed.
+      if (next) suppressClickPick.current = null;
+      setOpen((prev) => {
         if (prev === next) return prev;
         latest.current.onOpenChange?.(next);
         return next;
@@ -292,6 +372,10 @@ export function FolderFloat({
   );
 
   const pick = (item: { label: string; value: string }, i: number) => {
+    // Ignore stray activations while the folder is closed or closing (e.g. a
+    // tap aimed at the folder landing on a pill mid-animation) — selecting a
+    // filter the user never meant to pick is exactly the reported bug.
+    if (!openRef.current) return;
     latest.current.onSelect?.(item.value, i);
     clearTimeout(popTimer.current);
     setPopped(i);
@@ -309,7 +393,15 @@ export function FolderFloat({
     const b = w.bodies[i];
     if (!b) return;
     const p = pointerAt(e);
-    w.drag = { i, id: e.pointerId, dx: b.position.x - p.x, dy: b.position.y - p.y, sx: e.clientX, sy: e.clientY, moved: false };
+    w.drag = {
+      i,
+      id: e.pointerId,
+      dx: b.position.x - p.x,
+      dy: b.position.y - p.y,
+      sx: e.clientX,
+      sy: e.clientY,
+      moved: false,
+    };
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
@@ -334,7 +426,11 @@ export function FolderFloat({
     Body.setVelocity(b, { x: (x - b.position.x) * 0.6, y: (y - b.position.y) * 0.6 });
     Body.setPosition(b, { x, y });
   };
-  const up = (e: ReactPointerEvent<HTMLButtonElement>, i: number, item: { label: string; value: string }) => {
+  const up = (
+    e: ReactPointerEvent<HTMLButtonElement>,
+    i: number,
+    item: { label: string; value: string },
+  ) => {
     const w = world.current;
     const d = w.drag;
     if (!d || d.i !== i || d.id !== e.pointerId) return;
@@ -345,7 +441,10 @@ export function FolderFloat({
     } catch {
       // ignore
     }
-    if (!d.moved && e.type === "pointerup") pick(item, i);
+    if (!d.moved && e.type === "pointerup") {
+      suppressClickPick.current = i;
+      pick(item, i);
+    }
   };
 
   const hover = trigger === "hover";
@@ -358,33 +457,41 @@ export function FolderFloat({
       data-physics={physics ? "" : undefined}
       data-trigger={trigger}
       onPointerEnter={hover ? () => set(true) : undefined}
-      onPointerLeave={hover ? () => { if (!world.current.drag) set(false); } : undefined}
-      onKeyDown={e => {
+      onPointerLeave={
+        hover
+          ? () => {
+              if (!world.current.drag) set(false);
+            }
+          : undefined
+      }
+      onKeyDown={(e) => {
         if (e.key === "Escape" && open) {
           e.stopPropagation();
           set(false);
         }
       }}
-      style={{
-        "--ff-w": `${width}px`,
-        "--ff-h": `${height}px`,
-        "--ff-r": `${radius}px`,
-        "--ff-back": folderColor,
-        "--ff-front": frontColor,
-        "--ff-paper": paperColor,
-        "--ff-item": itemColor,
-        "--ff-item-ink": itemTextColor,
-        "--ff-label": labelColor,
-        "--ff-spread": `${effectiveSpread}px`,
-        "--ff-lift": `${effectiveLift}px`,
-        "--ff-angle": `${flapAngle}deg`,
-        "--ff-rest": `${restAngle}deg`,
-        "--ff-open": `${openDuration}ms`,
-        "--ff-close": `${Math.round(openDuration * 0.6)}ms`,
-        "--ff-stagger": `${stagger}ms`,
-        "--ff-n": n,
-        "--ff-spring": `cubic-bezier(0.34, ${(1 + bounce * 1.9).toFixed(2)}, 0.64, 1)`,
-      } as CSSProperties}
+      style={
+        {
+          "--ff-w": `${width}px`,
+          "--ff-h": `${height}px`,
+          "--ff-r": `${radius}px`,
+          "--ff-back": folderColor,
+          "--ff-front": frontColor,
+          "--ff-paper": paperColor,
+          "--ff-item": itemColor,
+          "--ff-item-ink": itemTextColor,
+          "--ff-label": labelColor,
+          "--ff-spread": `${effectiveSpread}px`,
+          "--ff-lift": `${effectiveLift}px`,
+          "--ff-angle": `${flapAngle}deg`,
+          "--ff-rest": `${restAngle}deg`,
+          "--ff-open": `${openDuration}ms`,
+          "--ff-close": `${Math.round(openDuration * 0.6)}ms`,
+          "--ff-stagger": `${stagger}ms`,
+          "--ff-n": n,
+          "--ff-spring": `cubic-bezier(0.34, ${(1 + bounce * 1.9).toFixed(2)}, 0.64, 1)`,
+        } as CSSProperties
+      }
     >
       <div ref={anchorRef} className="folder-float__items">
         {list.map((item, i) => {
@@ -393,18 +500,42 @@ export function FolderFloat({
           return (
             <button
               key={`${item.value}-${i}`}
-              ref={el => { pillRefs.current[i] = el; }}
+              ref={(el) => {
+                pillRefs.current[i] = el;
+              }}
               type="button"
               className="folder-float__item"
               tabIndex={open ? 0 : -1}
               aria-hidden={!open}
               data-pop={popped === i ? "" : undefined}
-              style={{ "--i": i, "--x": `${p.x.toFixed(1)}px`, "--y": `${p.y.toFixed(1)}px`, "--r": `${p.r.toFixed(2)}deg` } as CSSProperties}
-              onPointerDown={e => down(e, i)}
-              onPointerMove={e => move(e, i)}
-              onPointerUp={e => up(e, i, item)}
-              onPointerCancel={e => up(e, i, item)}
-              onClick={e => { if (!world.current.live || e.detail === 0) pick(item, i); }}
+              style={
+                {
+                  "--i": i,
+                  "--x": `${p.x.toFixed(1)}px`,
+                  "--y": `${p.y.toFixed(1)}px`,
+                  "--r": `${p.r.toFixed(2)}deg`,
+                } as CSSProperties
+              }
+              onPointerDown={(e) => down(e, i)}
+              onPointerMove={(e) => move(e, i)}
+              onPointerUp={(e) => up(e, i, item)}
+              onPointerCancel={(e) => up(e, i, item)}
+              onClick={(e) => {
+                // Keyboard / assistive-tech activation: no pointer events precede it.
+                if (e.detail === 0) {
+                  pick(item, i);
+                  return;
+                }
+                // Trailing click of a tap already handled on pointerup.
+                if (suppressClickPick.current === i) {
+                  suppressClickPick.current = null;
+                  return;
+                }
+                // Drag release (physics still live) must never select.
+                if (world.current.live) return;
+                // Tap before physics started: pointer handlers were inert.
+                pick(item, i);
+              }}
             >
               <span className="folder-float__drift">{item.label}</span>
             </button>
@@ -418,7 +549,13 @@ export function FolderFloat({
           <span className="folder-float__label">{label}</span>
           <span className="folder-float__sub">{sub}</span>
         </span>
-        <button type="button" className="folder-float__trigger" aria-expanded={open} aria-label={`${label}, ${sub}`} onClick={() => set(!open)} />
+        <button
+          type="button"
+          className="folder-float__trigger"
+          aria-expanded={open}
+          aria-label={`${label}, ${sub}`}
+          onClick={() => set(!openRef.current)}
+        />
       </div>
     </div>
   );

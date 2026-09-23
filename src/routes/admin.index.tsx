@@ -4,10 +4,17 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGri
 import { MessageSquare, FileText, Users, Building2 } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
 import { listContacts, listDevis, listRecruits, listProjects } from "@/lib/backend/functions";
-import type { ContactSubmission, DevisSubmission, RecruitSubmission, AdminProject } from "@/lib/backend/functions";
+import type {
+  ContactSubmission,
+  DevisSubmission,
+  RecruitSubmission,
+  AdminProject,
+} from "@/lib/backend/functions";
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Admin — Lahlou Workers" }] }),
+  head: () => ({
+    meta: [{ title: "Admin | Lahlou Workers" }, { name: "robots", content: "noindex, nofollow" }],
+  }),
   component: AdminOverview,
 });
 
@@ -24,19 +31,27 @@ function AdminOverview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([listContacts(), listDevis(), listRecruits(), listProjects()]).then(([c, d, r, p]) => {
-      setContacts(c);
-      setDevis(d);
-      setRecruits(r);
-      setProjects(p);
-      setLoading(false);
-    });
+    Promise.all([listContacts(), listDevis(), listRecruits(), listProjects()]).then(
+      ([c, d, r, p]) => {
+        setContacts(c);
+        setDevis(d);
+        setRecruits(r);
+        setProjects(p);
+        setLoading(false);
+      },
+    );
   }, []);
 
-  const all = [...contacts.map(c => c.createdAt), ...devis.map(d => d.createdAt), ...recruits.map(r => r.createdAt)];
+  const all = [
+    ...contacts.map((c) => c.createdAt),
+    ...devis.map((d) => d.createdAt),
+    ...recruits.map((r) => r.createdAt),
+  ];
   const byMonth = new Map<string, number>();
-  all.forEach(iso => byMonth.set(monthKey(iso), (byMonth.get(monthKey(iso)) ?? 0) + 1));
-  const chartData = [...byMonth.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({ month, count }));
+  all.forEach((iso) => byMonth.set(monthKey(iso), (byMonth.get(monthKey(iso)) ?? 0) + 1));
+  const chartData = [...byMonth.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, count]) => ({ month, count }));
 
   const stats = [
     { label: "Contacts", value: contacts.length, icon: MessageSquare },
@@ -55,7 +70,7 @@ function AdminOverview() {
       ) : (
         <>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map(s => (
+            {stats.map((s) => (
               <div key={s.label} className="border border-border bg-background p-6">
                 <s.icon className="h-5 w-5 text-primary" />
                 <p className="mt-4 font-display text-3xl font-bold">{s.value}</p>
@@ -66,7 +81,9 @@ function AdminOverview() {
 
           <div className="mt-8 border border-border bg-background p-6">
             <h2 className="font-display text-lg font-bold">Soumissions par mois</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Contacts, devis et candidatures combinés.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Contacts, devis et candidatures combinés.
+            </p>
             <div className="mt-6 h-64">
               {chartData.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Aucune donnée pour le moment.</p>
@@ -74,8 +91,16 @@ function AdminOverview() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--muted-foreground)" />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="var(--muted-foreground)" />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 12 }}
+                      stroke="var(--muted-foreground)"
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tick={{ fontSize: 12 }}
+                      stroke="var(--muted-foreground)"
+                    />
                     <Tooltip />
                     <Bar dataKey="count" fill="var(--primary)" />
                   </BarChart>
