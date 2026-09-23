@@ -1,107 +1,220 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDown, ArrowUpRight, ChevronLeft, ChevronRight, Menu, MessageCircle, Minus, Plus, X } from "lucide-react";
-import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Plus, Star } from "lucide-react";
+import { useState } from "react";
+import { SplitButton } from "@/components/ui/split-button";
+import { Eyebrow, PageShell, SectionHead } from "@/components/site-chrome";
+import { FadeUp, HeroParallax, ParallaxImage, PinnedCircleReveal, RevealImage, ScrollProgressBar, Stagger, StaggerItem, StickySteps } from "@/components/scroll-fx";
+import { StackedProjects } from "@/components/ui/stacked-projects";
 import heroImage from "@/assets/lahlou-hero.jpg";
 import craftImage from "@/assets/lahlou-craft.jpg";
 import projectImage from "@/assets/lahlou-project.jpg";
 import teamImage from "@/assets/lahlou-team.jpg";
+import serviceGrosOeuvre from "@/assets/service-gros-oeuvre.jpg";
+import methodeImage from "@/assets/methode-coordination-equipe.jpg";
+import galerieAerien from "@/assets/galerie-chantier-aerien.jpg";
+import stampChantierLivre from "@/assets/decor/stamp-chantier-livre.png";
+import archCanopy from "@/assets/decor/arch-canopy.png";
+import archTower from "@/assets/decor/arch-tower.png";
+import archBridge from "@/assets/decor/arch-bridge.png";
+import archCluster from "@/assets/decor/arch-cluster.png";
+import archCraneBridge from "@/assets/decor/arch-crane-bridge.png";
+import archStack from "@/assets/decor/arch-stack.png";
+import partnerLogo01 from "@/assets/partners/partner-01.png";
+import partnerLogo02 from "@/assets/partners/partner-02.png";
+import partnerLogo03 from "@/assets/partners/partner-03.png";
+import partnerLogo04 from "@/assets/partners/partner-04.png";
+import partnerLogo05 from "@/assets/partners/partner-05.png";
+import partnerLogo06 from "@/assets/partners/partner-06.png";
+import partnerLogo07 from "@/assets/partners/partner-07.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
-    { title: "Lahlou Workers — Construire avec les bonnes mains" },
-    { name: "description", content: "Équipes qualifiées, mobilisées vite, pour vos chantiers partout au Maroc." },
-    { property: "og:title", content: "Lahlou Workers — Construire avec les bonnes mains" },
-    { property: "og:description", content: "Équipes qualifiées, mobilisées vite, pour vos chantiers partout au Maroc." },
+    { title: "Lahlou Workers — Construction haut de gamme à Agadir" },
+    { name: "description", content: "Résidences de standing et immeubles de bureaux, du gros œuvre à la livraison. Basés à Agadir, nous intervenons partout au Maroc." },
+    { property: "og:title", content: "Lahlou Workers — Construction haut de gamme à Agadir" },
+    { property: "og:description", content: "Résidences de standing et immeubles de bureaux, du gros œuvre à la livraison. Basés à Agadir, nous intervenons partout au Maroc." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: Index,
 });
 
-const services = [
-  ["01", "Gros œuvre", "Maçonnerie", "Coffrage", "Ferraillage", "Béton"],
-  ["02", "Finitions", "Plâtrerie", "Peinture", "Carrelage", "Menuiserie"],
-  ["03", "Main-d’œuvre qualifiée", "Électriciens", "Plombiers", "Soudeurs", "Chefs d’équipe"],
-  ["04", "Rénovation", "Diagnostic", "Dépose", "Reprise", "Remise en état"],
-];
-
 const steps = [
-  { n: "01", name: "Besoin", title: "On cadre le chantier.", text: "Vous nous partagez le métier, le nombre de personnes, le lieu et la date de démarrage.", points: ["Un échange direct", "Un besoin clairement défini", "Un interlocuteur unique"] },
-  { n: "02", name: "Devis", title: "On compose la bonne équipe.", text: "Nous sélectionnons les profils adaptés et vous transmettons une proposition claire.", points: ["Profils vérifiés", "Périmètre précis", "Délais annoncés"] },
-  { n: "03", name: "Chantier", title: "L’équipe prend le relais.", text: "Nos ouvriers arrivent préparés, encadrés et prêts à avancer avec vos responsables.", points: ["Mobilisation coordonnée", "Suivi régulier", "Travail tenu jusqu’au bout"] },
+  { n: "01", name: "Besoin", title: "On cadre le chantier.", text: "Vous nous partagez le métier, le nombre de personnes, le lieu et la date de démarrage.", points: ["Un échange direct", "Un besoin clairement défini", "Un interlocuteur unique"], image: methodeImage },
+  { n: "02", name: "Devis", title: "On compose la bonne équipe.", text: "Nous sélectionnons les profils adaptés et vous transmettons une proposition claire.", points: ["Profils vérifiés", "Périmètre précis", "Délais annoncés"], image: craftImage },
+  { n: "03", name: "Chantier", title: "L’équipe prend le relais.", text: "Nos ouvriers arrivent préparés, encadrés et prêts à avancer avec vos responsables.", points: ["Mobilisation coordonnée", "Suivi régulier", "Travail tenu jusqu’au bout"], image: teamImage },
 ];
 
-function Wordmark({ inverse = false }: { inverse?: boolean }) {
-  return <a href="#top" className={`font-display text-[19px] font-black ${inverse ? "text-background" : "text-foreground"}`} aria-label="Lahlou Workers, accueil">lahl<span className="text-primary">o</span>u workers</a>;
-}
+const projectCardsData: { category: string; title: string; src: string; detail: string }[] = [
+  { category: "Résidentiel · Agadir", title: "Résidences MISSIMI", src: projectImage, detail: "Ensemble résidentiel de standing livré clé en main, du gros œuvre aux finitions." },
+  { category: "Résidentiel · Agadir", title: "Immeuble R+5 post-tension", src: galerieAerien, detail: "Structure post-tension pilotée avec un suivi technique constant jusqu’à la livraison." },
+  { category: "Résidentiel · Agadir", title: "Villa avec piscine", src: teamImage, detail: "Villa individuelle avec piscine, finitions haut de gamme et équipe dédiée sur site." },
+  { category: "Industriel · Tan-Tan", title: "Infrastructure cimenterie", src: craftImage, detail: "Chantier industriel d’envergure mené en coordination avec les équipes techniques du client." },
+  { category: "Rénovation · Agadir", title: "Rénovation siège administratif", src: heroImage, detail: "Réhabilitation complète d’un siège administratif en activité, sans interruption d’exploitation." },
+  { category: "Commercial · Agadir", title: "Aménagement de bureaux", src: serviceGrosOeuvre, detail: "Aménagement d’espaces de bureaux, du second œuvre à la livraison des lots." },
+];
 
-function SectionHead({ label, title, red }: { label: string; title: string; red?: string }) {
-  const parts = red ? title.split(red) : [title];
-  return <div className="grid gap-7 border-t border-border pt-5 lg:grid-cols-12"><p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground lg:col-span-3">{label}</p><h2 className="font-display text-[38px] font-black leading-[0.95] lg:col-span-8 lg:text-[68px]">{parts[0]}{red && <span className="text-primary">{red}</span>}{parts[1]}</h2></div>;
-}
+
+const partnerLogos = [partnerLogo01, partnerLogo02, partnerLogo03, partnerLogo04, partnerLogo05, partnerLogo06, partnerLogo07];
+
+const faqs = [
+  { q: "Intervenez-vous partout au Maroc ?", a: "Oui. Nous organisons les équipes selon la ville, la durée et les besoins du chantier." },
+  { q: "Quels profils pouvez-vous mobiliser ?", a: "Maçons, coffreurs, ferrailleurs, peintres, carreleurs, plombiers, électriciens et chefs d’équipe." },
+  { q: "Pouvez-vous prendre en charge un chantier complet ?", a: "Oui. Nous intervenons en équipe seule ou sur un périmètre complet, du gros œuvre aux finitions." },
+  { q: "Comment demander un devis ?", a: "Décrivez le lieu, le métier, l’effectif et la date souhaitée. Nous revenons vers vous pour préciser le besoin." },
+];
+
+const testimonials = [
+  { quote: "Une équipe ponctuelle, autonome et claire dans ses échanges. Le chantier a avancé sans perte de temps.", name: "Maîtrise d’ouvrage", city: "Agadir", image: projectImage },
+  { quote: "Les profils correspondaient vraiment au besoin. L’encadrement a fait la différence dès le premier jour.", name: "Entreprise générale", city: "Taroudant", image: craftImage },
+  { quote: "Un interlocuteur disponible et des ouvriers qui connaissent leur métier. C’est simple et efficace.", name: "Client privé", city: "Inezgane", image: teamImage },
+  { quote: "Chantier livré dans les temps, avec un suivi rigoureux du début à la fin.", name: "Promoteur immobilier", city: "Tan-Tan", image: serviceGrosOeuvre },
+];
 
 function Index() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
   const [openFaq, setOpenFaq] = useState(0);
-  const reviewsRef = useRef<HTMLDivElement>(null);
-  const currentStep = steps[activeStep] ?? steps[0] ?? { title: "", text: "", points: [] };
 
-  return <main id="top">
-    <header className={`fixed inset-x-0 top-0 z-50 text-background transition-colors duration-500 ${menuOpen ? "bg-foreground" : "bg-transparent"}`}>
-      <div className="mx-auto flex h-[82px] max-w-[1440px] items-center justify-between px-5 lg:px-8">
-        <Wordmark inverse />
-        <Button variant="ghost" size="icon" className="text-background hover:bg-background/10 hover:text-background" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}>{menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</Button>
-      </div>
-      {menuOpen && <nav className="fixed inset-0 -z-10 flex min-h-svh flex-col bg-foreground px-5 pb-8 pt-28 text-background lg:px-8" aria-label="Navigation principale"><div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col justify-center"><div className="mx-auto grid w-full max-w-xl gap-2 font-display text-[42px] font-bold leading-tight sm:text-[54px]">{[["Accueil","top"],["À propos","apropos"],["Métiers","metiers"],["Réalisations","realisations"],["Méthode","methode"],["Contact","contact"]].map(([a,b])=><a key={b} href={`#${b}`} className="transition-colors hover:text-primary" onClick={()=>setMenuOpen(false)}>{a}</a>)}<Button asChild size="lg" className="split-cta mt-6 w-fit"><a href="#contact" onClick={()=>setMenuOpen(false)}>Demander une équipe <ArrowUpRight /></a></Button></div><div className="mt-auto flex items-end justify-between border-t border-background/20 pt-5 text-xs"><a href="mailto:contact@lahlouworkers.ma">contact@lahlouworkers.ma</a><span className="text-muted-foreground">Maroc</span></div></div></nav>}
-    </header>
-
-    <section className="relative h-svh min-h-[680px] overflow-hidden bg-foreground text-background">
-      <img src={heroImage} alt="Équipe Lahlou au travail sur un chantier à Casablanca" width={1920} height={1200} className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" />
-      <div className="absolute inset-0 bg-foreground/40" />
-      <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-foreground/75 to-transparent" />
-      <div className="relative mx-auto flex h-full max-w-[1440px] flex-col justify-end px-5 pb-7 pt-28 lg:px-8 lg:pb-10">
-        <div className="grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
-          <div className="overflow-hidden lg:col-span-7"><h1 className="reveal-line font-display text-[50px] font-bold leading-[0.92] sm:text-[64px] lg:text-[76px]">Construire avec<br/>les bonnes mains.</h1></div>
-          <div className="lg:col-span-4 lg:col-start-9 lg:pb-1"><p className="max-w-sm text-sm leading-relaxed text-background/90 lg:text-base">Des équipes qualifiées, mobilisées vite, sur vos chantiers partout au Maroc.</p><Button asChild size="lg" className="split-cta mt-6"><a href="#contact">Demander une équipe <ArrowUpRight /></a></Button></div>
+  return <PageShell header="hero">
+    <ScrollProgressBar />
+    <section className="relative h-svh overflow-hidden bg-foreground text-background">
+      <HeroParallax src={heroImage} alt="Équipe Lahlou au travail sur un chantier à Agadir" />
+      <div className="absolute inset-0 bg-gradient-to-b from-foreground/80 via-foreground/15 to-foreground/85" />
+      <div className="relative mx-auto flex h-svh max-w-[1440px] flex-col justify-end px-5 pb-12 pt-32 lg:px-8 lg:pb-16">
+        <div className="grid items-end gap-10 lg:grid-cols-12 lg:gap-12">
+          <div className="lg:col-span-8">
+            <div className="overflow-hidden"><h1 className="reveal-line font-display text-[40px] font-bold uppercase leading-[0.95] sm:text-[52px] lg:text-[80px]">On construit avec</h1></div>
+            <div className="overflow-hidden"><h1 className="reveal-line font-display text-[40px] font-bold uppercase leading-[0.95] sm:text-[52px] lg:text-[80px]" style={{ animationDelay: "120ms" }}>les bonnes <span className="text-primary">mains</span>.</h1></div>
+          </div>
+          <FadeUp delay={0.5} className="lg:col-span-4 lg:pb-2"><p className="max-w-sm text-sm leading-relaxed text-background/85 lg:text-base">Construction haut de gamme depuis Agadir, pour vos résidences et immeubles de bureaux partout au Maroc.</p><SplitButton href="/devis" className="mt-7">Demander une équipe</SplitButton></FadeUp>
         </div>
-        <div className="mt-12 flex items-center justify-between border-t border-background/40 pt-4 text-[11px] font-semibold uppercase tracking-[0.14em]"><span>Casablanca · Maroc</span><a href="#apropos" className="flex items-center gap-2">Découvrir <ArrowDown className="h-4 w-4" /></a></div>
+        <FadeUp delay={0.7} className="mt-14 flex items-center justify-between border-t border-background/25 pt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-background/70"><span>Agadir · Maroc</span><a href="#apropos" className="flex items-center gap-2 text-background">Défiler</a></FadeUp>
+        <FadeUp delay={0.85} className="mt-10 flex items-center gap-8">
+          <p className="hidden shrink-0 items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-background/70 lg:flex"><span className="h-2 w-2 rounded-full bg-primary" />Partenaires</p>
+          <div className="group flex-1 overflow-hidden">
+            <div className="photo-drift flex w-max items-center gap-14 group-hover:[animation-play-state:paused]">
+              {[...partnerLogos, ...partnerLogos].map((src, i) => <div key={i} className="flex h-24 shrink-0 items-center justify-center"><img src={src} alt="" loading="lazy" width={320} height={160} className="max-h-20 w-auto object-contain invert" /></div>)}
+            </div>
+          </div>
+        </FadeUp>
       </div>
     </section>
 
-    <section id="apropos" className="mx-auto max-w-[1440px] px-5 py-24 lg:px-8 lg:py-40">
-      <SectionHead label="À propos" title="Plus que des bras." red="bras" />
-      <div className="mt-20 grid border-y border-border md:grid-cols-3">{[
-        ["01","Fiabilité","Une équipe annoncée est une équipe présente."], ["02","Savoir-faire","Des ouvriers sélectionnés et encadrés."], ["03","Rapidité","Une mobilisation en quelques jours, pas en semaines."],
-      ].map((item,i)=><div key={item[0]} className={`py-8 md:px-8 ${i>0 ? "border-t border-border md:border-l md:border-t-0" : ""}`}><span className="text-xs font-bold text-muted-foreground">{item[0]}</span><h3 className="mt-10 font-display text-2xl font-black">{item[1]}</h3><p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">{item[2]}</p></div>)}</div>
-      <div className="mt-8 grid h-[560px] grid-cols-12 gap-3 overflow-hidden lg:h-[680px]"><img src={craftImage} alt="Maçon Lahlou réalisant un mur" loading="lazy" width={1600} height={1200} className="col-span-8 h-[62%] w-full object-cover lg:col-span-7 lg:h-[78%]"/><img src={teamImage} alt="Équipe de finition Lahlou" loading="lazy" width={1600} height={1200} className="col-span-4 mt-16 h-[54%] w-full object-cover lg:col-span-3 lg:mt-28 lg:h-[64%]"/><img src={projectImage} alt="Chantier résidentiel au Maroc" loading="lazy" width={1600} height={1200} className="col-span-7 col-start-5 -mt-40 h-[54%] w-full object-cover lg:col-span-4 lg:col-start-9 lg:-mt-52 lg:h-[62%]"/></div>
+    <section id="apropos" className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-28">
+      <img src={archCanopy} alt="" aria-hidden className="pointer-events-none absolute -right-24 -top-10 hidden w-[800px] opacity-[0.22] mix-blend-multiply lg:block" />
+      <div className="relative grid items-start gap-10 lg:grid-cols-12">
+        <FadeUp className="lg:col-span-7"><SectionHead label="À propos" title="Plus que des bras." red="bras" /></FadeUp>
+        <FadeUp delay={0.15} className="max-w-md text-lg leading-relaxed text-muted-foreground lg:col-span-4 lg:col-start-9 lg:pt-16"><p>Depuis Agadir, nous construisons des résidences de standing et des immeubles de bureaux avec des standards internationaux, de la conception à la livraison.</p><div className="mt-6"><SplitButton href="/realisations">Nos réalisations</SplitButton></div></FadeUp>
+      </div>
+      <div className="relative mt-16 h-[440px] sm:h-[540px] lg:h-[620px]">
+        <RevealImage src={craftImage} alt="Maçon Lahlou réalisant un mur" className="absolute inset-y-0 left-0 w-[62%] border border-border" />
+        <RevealImage src={teamImage} alt="Équipe de finition Lahlou" className="absolute right-0 top-0 h-[46%] w-[34%] border border-border" />
+        <ParallaxImage src={projectImage} alt="Chantier résidentiel au Maroc" className="absolute bottom-0 right-0 h-[42%] w-[30%] border border-border" strength={40} />
+      </div>
     </section>
 
-    <section className="border-y border-border"><div className="mx-auto grid max-w-[1440px] px-5 lg:grid-cols-3 lg:px-8">{[["Maroc","Couverture nationale"],["03","Engagements tenus"],["01","Interlocuteur dédié"]].map((s,i)=><div key={s[1]} className={`py-16 lg:px-10 lg:py-24 ${i>0?"border-t border-border lg:border-l lg:border-t-0":""}`}><div className={`font-display text-[72px] font-black leading-none lg:text-[112px] ${i===1?"text-primary":""}`}>{s[0]}</div><p className="mt-5 text-sm font-bold uppercase tracking-[0.14em]">{s[1]}</p></div>)}</div></section>
+    <section id="realisations" className="relative bg-foreground py-24 text-background lg:py-36">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <img src={archBridge} alt="" aria-hidden className="absolute -right-32 -top-24 w-[720px] max-w-none opacity-[0.14] lg:-right-40 lg:-top-32 lg:w-[1000px]" />
+        <img src={stampChantierLivre} alt="" aria-hidden className="absolute right-8 top-8 w-20 -rotate-6 opacity-90 sm:w-28 lg:right-16 lg:top-12 lg:w-32" />
+      </div>
+      <div className="relative mx-auto max-w-[1440px] px-5 text-center lg:px-8">
+        <FadeUp className="flex justify-center"><Eyebrow label="Projets" /></FadeUp>
+        <FadeUp delay={0.1}><h2 className="mx-auto mt-8 max-w-2xl font-display text-[26px] font-bold uppercase leading-[0.95] lg:text-[44px]">Vos prochains chantiers<span className="ml-3 inline-block h-3 w-3 rounded-full bg-primary align-middle" /><br/>commencent ici.</h2></FadeUp>
+        <FadeUp delay={0.2}><p className="mx-auto mt-6 max-w-md text-base leading-relaxed text-background/70">Chantiers livrés partout au Maroc, avec la même exigence à chaque étape.</p></FadeUp>
+        <FadeUp delay={0.3} className="mt-9 flex justify-center"><SplitButton href="/devis" dark>Demander une équipe</SplitButton></FadeUp>
+      </div>
+      <div className="relative mt-16">
+        <StackedProjects items={projectCardsData.slice(0, 3).map(p => ({ category: p.category.split(" · ")[0] ?? p.category, title: p.title, description: p.detail, image: p.src }))} />
+      </div>
+    </section>
 
-    <section id="metiers" className="mx-auto max-w-[1440px] px-5 py-24 lg:px-8 lg:py-40"><SectionHead label="Services" title="Nos métiers." red="métiers"/><p className="ml-auto mt-8 max-w-md text-lg leading-relaxed text-muted-foreground">Du gros œuvre à la dernière finition, des équipes ajustées à votre chantier.</p><div className="mt-20 border-t border-foreground">{services.map((s,i)=><div key={s[0]} className="group grid items-center gap-5 border-b border-border py-7 transition-[padding] duration-500 hover:py-10 lg:grid-cols-12"><span className={`text-xs font-bold ${i===0?"text-primary":"text-muted-foreground"}`}>{s[0]}</span><h3 className="font-display text-3xl font-black lg:col-span-5 lg:text-5xl">{s[1]}</h3><div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground lg:col-span-4">{s.slice(2).map(t=><span key={t}>{t}</span>)}</div><ArrowUpRight className="ml-auto transition-transform duration-500 group-hover:translate-x-2"/></div>)}</div></section>
+    <section id="methode" className="relative mx-auto max-w-[1440px] px-5 pb-0 pt-16 lg:px-8 lg:pt-24">
+      <div className="relative overflow-hidden text-center">
+        <img src={archCraneBridge} alt="" aria-hidden className="pointer-events-none absolute -left-40 -top-10 hidden w-[760px] opacity-[0.22] mix-blend-multiply lg:block" />
+        <FadeUp>
+          <div className="flex justify-center"><Eyebrow label="Fonctionnalités clés" /></div>
+          <h2 className="mt-6 font-display text-[32px] font-bold lg:text-[56px]">Trois étapes. Pas de détour.</h2>
+          <div className="mt-6 flex justify-center"><SplitButton href="/devis">Demander un devis</SplitButton></div>
+        </FadeUp>
+      </div>
+      <div className="relative mt-16 lg:mt-20">
+        <StickySteps
+          steps={steps}
+          renderImage={s => <img src={s.image} alt={s.title} loading="lazy" width={1200} height={900} className="h-full w-full border border-border object-cover" />}
+          renderContent={s => (
+            <div>
+              <span className="font-display text-3xl font-bold text-muted-foreground/40">{s.n}</span>
+              <h3 className="mt-4 font-display text-2xl font-bold lg:text-4xl">{s.title}</h3>
+              <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">{s.text}</p>
+              <div className="mt-6 flex flex-wrap gap-2">{s.points.map(p => <span key={p} className="block border border-border bg-secondary px-4 py-2 text-xs font-semibold text-muted-foreground">{p}</span>)}</div>
+            </div>
+          )}
+        />
+      </div>
+    </section>
 
-    <section id="methode" className="bg-foreground py-24 text-background lg:py-40"><div className="mx-auto max-w-[1440px] px-5 lg:px-8"><SectionHead label="Méthode" title="Trois étapes. Pas de détour." red="Trois"/><div className="mt-20 grid gap-12 lg:grid-cols-12"><div className="lg:col-span-7"><div className="grid grid-cols-3 border-b border-background/25">{steps.map((s,i)=><button key={s.n} className={`border-b-2 py-5 text-left text-sm font-bold transition-colors ${activeStep===i?"border-primary text-background":"border-transparent text-muted-foreground"}`} onClick={()=>setActiveStep(i)}><span className="mr-3 text-[10px]">{s.n}</span>{s.name}</button>)}</div><div className="py-14"><h3 className="font-display text-4xl font-black lg:text-6xl">{currentStep.title}</h3><p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">{currentStep.text}</p><ul className="mt-10 max-w-xl border-t border-background/20">{currentStep.points.map(p=><li key={p} className="flex items-center gap-4 border-b border-background/20 py-4 text-sm"><span className="h-1.5 w-1.5 bg-primary"/>{p}</li>)}</ul></div></div><img src={teamImage} alt="Ouvriers Lahlou coordonnant les finitions" loading="lazy" width={1600} height={1200} className="h-[560px] w-full object-cover lg:col-span-5"/></div></div></section>
+    <section className="relative overflow-hidden bg-secondary py-24 lg:py-32">
+      <img src={archStack} alt="" aria-hidden className="pointer-events-none absolute -right-32 -top-24 hidden w-[820px] opacity-[0.22] mix-blend-multiply lg:block" />
+      <div className="relative mx-auto max-w-[1440px] px-5 lg:px-8">
+        <FadeUp>
+          <Eyebrow label="Avis" />
+          <h2 className="mt-7 font-display text-4xl font-bold lg:text-6xl">Ils nous font confiance.</h2>
+          <div className="mt-5"><SplitButton href="/realisations">Voir nos réalisations</SplitButton></div>
+        </FadeUp>
+      </div>
+      <div className="group mt-16 overflow-hidden">
+        <div className="photo-drift flex w-max gap-5 group-hover:[animation-play-state:paused]">
+          {[...testimonials, ...testimonials].map((t, i) => <article key={i} className="w-[300px] shrink-0 bg-background sm:w-[360px]">
+            <img src={t.image} alt="" loading="lazy" width={720} height={480} className="aspect-[4/3] w-full object-cover" />
+            <div className="p-6">
+              <div className="flex gap-1 text-primary">{Array.from({ length: 5 }).map((_, s) => <Star key={s} className="h-4 w-4 fill-current" />)}</div>
+              <p className="mt-4 text-sm leading-relaxed">{t.quote}</p>
+              <div className="mt-6 flex items-center gap-3 border-t border-border pt-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-secondary font-display text-sm font-bold">{t.name[0]}</div>
+                <div><p className="text-sm font-bold">{t.name}</p><p className="text-xs text-muted-foreground">{t.city}</p></div>
+              </div>
+            </div>
+          </article>)}
+        </div>
+      </div>
+    </section>
 
-    <section id="realisations" className="mx-auto max-w-[1440px] px-5 py-24 lg:px-8 lg:py-40"><SectionHead label="Réalisations" title="Chantiers livrés." red="livrés"/><div className="mt-20 grid gap-12 lg:grid-cols-12"><article className="lg:col-span-7"><img src={projectImage} alt="Projet résidentiel au Maroc" loading="lazy" width={1600} height={1200} className="aspect-[4/3] w-full object-cover"/><div className="mt-5 flex justify-between border-t border-border pt-4"><div><h3 className="font-display text-2xl font-black">Projet résidentiel</h3><p className="mt-1 text-sm text-muted-foreground">Rabat · Gros œuvre</p></div><span className="text-xs font-bold">01</span></div></article><article className="lg:col-span-5 lg:pt-36"><img src={teamImage} alt="Travaux de finition intérieure" loading="lazy" width={1600} height={1200} className="aspect-[4/3] w-full object-cover"/><div className="mt-5 flex justify-between border-t border-border pt-4"><div><h3 className="font-display text-2xl font-black">Finitions intérieures</h3><p className="mt-1 text-sm text-muted-foreground">Casablanca · Second œuvre</p></div><span className="text-xs font-bold">02</span></div></article></div></section>
+    <section className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-28">
+      <img src={archTower} alt="" aria-hidden className="pointer-events-none absolute -left-32 bottom-0 hidden w-[700px] opacity-[0.22] mix-blend-multiply lg:block" />
+      <div className="relative grid gap-10 lg:grid-cols-12">
+        <FadeUp className="lg:col-span-4">
+          <SectionHead label="Questions" title="Avant de commencer." red="commencer" />
+          <p className="mt-6 max-w-sm text-muted-foreground">Les réponses aux questions les plus courantes. Une autre question ?</p>
+          <div className="mt-6"><SplitButton href="/contact">Nous contacter</SplitButton></div>
+        </FadeUp>
+        <Stagger className="lg:col-span-7 lg:col-start-6">{faqs.map((f, i) => {
+          const isOpen = openFaq === i;
+          return <StaggerItem key={f.q}>
+            <div className="border-b border-border">
+              <button className="group flex w-full items-center gap-6 py-6 text-left" onClick={() => setOpenFaq(isOpen ? -1 : i)} aria-expanded={isOpen}>
+                <span className={`font-display text-xs font-bold transition-colors ${isOpen ? "text-primary" : "text-muted-foreground/50"}`}>{String(i + 1).padStart(2, "0")}</span>
+                <span className={`flex-1 font-bold transition-colors ${isOpen ? "text-primary" : "group-hover:text-primary"}`}>{f.q}</span>
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border transition-all duration-300 ${isOpen ? "rotate-45 border-primary text-primary" : "text-muted-foreground"}`}><Plus className="h-4 w-4" /></span>
+              </button>
+              <div className="grid transition-[grid-template-rows] duration-[400ms] ease-out" style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}>
+                <div className="overflow-hidden"><p className="max-w-xl pb-6 pl-[calc(1.5rem+1.9rem)] text-sm leading-relaxed text-muted-foreground">{f.a}</p></div>
+              </div>
+            </div>
+          </StaggerItem>;
+        })}</Stagger>
+      </div>
+    </section>
 
-    <section className="border-y border-border py-24 lg:py-32"><div className="mx-auto max-w-[1440px] px-5 lg:px-8"><div className="flex items-end justify-between"><div><p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Témoignages</p><h2 className="mt-7 font-display text-4xl font-black lg:text-6xl">Ils nous font confiance.</h2></div><div className="hidden gap-2 sm:flex"><Button variant="outline" size="icon" aria-label="Témoignage précédent" onClick={()=>reviewsRef.current?.scrollBy({left:-420,behavior:"smooth"})}><ChevronLeft/></Button><Button variant="outline" size="icon" aria-label="Témoignage suivant" onClick={()=>reviewsRef.current?.scrollBy({left:420,behavior:"smooth"})}><ChevronRight/></Button></div></div><div ref={reviewsRef} className="mt-16 flex snap-x gap-5 overflow-x-auto pb-5 [scrollbar-width:none]">{[
-        ["Une équipe ponctuelle, autonome et claire dans ses échanges. Le chantier a avancé sans perte de temps.","Maîtrise d’ouvrage","Casablanca"],
-        ["Les profils correspondaient vraiment au besoin. L’encadrement a fait la différence dès le premier jour.","Entreprise générale","Rabat"],
-        ["Un interlocuteur disponible et des ouvriers qui connaissent leur métier. C’est simple et efficace.","Client privé","Marrakech"],
-      ].map((r,i)=><blockquote key={r[2]} className="min-w-[86vw] snap-start border-t border-foreground pt-7 sm:min-w-[420px]"><span className={i===0?"font-display text-5xl text-primary":"font-display text-5xl"}>“</span><p className="mt-10 text-xl font-medium leading-relaxed">{r[0]}</p><footer className="mt-14 border-t border-border pt-4 text-sm"><strong>{r[1]}</strong><span className="ml-3 text-muted-foreground">{r[2]}</span></footer></blockquote>)}</div></div></section>
-
-    <section className="mx-auto grid max-w-[1440px] gap-16 px-5 py-24 lg:grid-cols-12 lg:px-8 lg:py-40"><div className="lg:col-span-5"><p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Questions</p><h2 className="mt-7 font-display text-4xl font-black lg:text-6xl">Avant de commencer.</h2><p className="mt-6 max-w-sm text-muted-foreground">Les réponses utiles pour cadrer votre demande.</p></div><div className="border-t border-foreground lg:col-span-7">{[
-      ["Intervenez-vous partout au Maroc ?","Oui. Nous organisons les équipes selon la ville, la durée et les besoins du chantier."],
-      ["Quels profils pouvez-vous mobiliser ?","Maçons, coffreurs, ferrailleurs, peintres, carreleurs, plombiers, électriciens et chefs d’équipe."],
-      ["Pouvez-vous prendre en charge un chantier complet ?","Oui. Nous intervenons en équipe seule ou sur un périmètre complet, du gros œuvre aux finitions."],
-      ["Comment demander un devis ?","Décrivez le lieu, le métier, l’effectif et la date souhaitée. Nous revenons vers vous pour préciser le besoin."],
-    ].map((f,i)=><div key={f[0]} className="border-b border-border"><button className="flex w-full items-center justify-between py-6 text-left font-bold" onClick={()=>setOpenFaq(openFaq===i?-1:i)} aria-expanded={openFaq===i}>{f[0]}{openFaq===i?<Minus/>:<Plus/>}</button>{openFaq===i&&<p className="max-w-xl pb-7 text-sm leading-relaxed text-muted-foreground">{f[1]}</p>}</div>)}</div></section>
-
-    <section id="contact" className="bg-primary text-primary-foreground"><div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-20 lg:grid-cols-12 lg:px-8 lg:py-28"><div className="lg:col-span-8"><p className="text-[11px] font-semibold uppercase tracking-[0.14em]">Contact</p><h2 className="mt-8 font-display text-[46px] font-black leading-[0.92] lg:text-[82px]">Votre prochain chantier commence ici.</h2></div><div className="flex flex-col justify-end lg:col-span-4"><p className="max-w-sm text-lg">Dites-nous ce dont vous avez besoin. On s’occupe des équipes.</p><Button asChild size="lg" className="split-cta split-cta-dark mt-8 w-fit"><a href="mailto:contact@lahlouworkers.ma">Obtenir un devis <ArrowUpRight/></a></Button></div></div></section>
-
-    <footer className="bg-foreground text-background"><div className="mx-auto max-w-[1440px] px-5 py-12 lg:px-8 lg:py-16"><div className="grid gap-12 border-b border-background/20 pb-16 lg:grid-cols-12"><div className="lg:col-span-5"><Wordmark inverse/><p className="mt-5 max-w-xs text-sm leading-relaxed text-muted-foreground">Des équipes qualifiées pour construire partout au Maroc.</p></div><div className="grid gap-10 sm:grid-cols-2 lg:col-span-7 lg:grid-cols-3"><div><p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Navigation</p><div className="mt-5 grid gap-3 text-sm"><a href="#apropos">À propos</a><a href="#metiers">Métiers</a><a href="#realisations">Réalisations</a></div></div><div><p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Écrire</p><div className="mt-5 grid gap-3 text-sm"><a href="mailto:contact@lahlouworkers.ma">contact@lahlouworkers.ma</a><a href="#contact">Demander une équipe</a></div></div><div><p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Zone</p><p className="mt-5 text-sm">Maroc</p></div></div></div><div className="flex flex-col gap-3 pt-6 text-xs text-muted-foreground sm:flex-row sm:justify-between"><span>© 2026 Lahlou Workers</span><span>Construction · Main-d’œuvre qualifiée</span></div></div></footer>
-    <a href="#contact" aria-label="Contacter Lahlou Workers sur WhatsApp" className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center border border-background/20 bg-dark-surface text-background transition-transform hover:-translate-y-1"><MessageCircle/></a>
-  </main>;
+    <section id="contact">
+      <PinnedCircleReveal className="flex h-svh items-center justify-center overflow-hidden bg-foreground text-background">
+        <img src={archCluster} alt="" aria-hidden className="pointer-events-none absolute -left-40 -bottom-32 w-[760px] max-w-none opacity-[0.13] lg:-left-52 lg:-bottom-40 lg:w-[1040px]" />
+        <div className="relative mx-auto max-w-[1440px] px-5 text-center lg:px-8">
+          <FadeUp className="flex justify-center"><Eyebrow label="Contact" /></FadeUp>
+          <FadeUp delay={0.1}><h2 className="mx-auto mt-8 max-w-3xl font-display text-[30px] font-bold uppercase leading-[0.95] lg:text-[64px]">Votre prochain chantier commence ici.</h2></FadeUp>
+          <FadeUp delay={0.2}><p className="mx-auto mt-6 max-w-md text-lg text-background/75">Dites-nous ce dont vous avez besoin. On s’occupe des équipes.</p></FadeUp>
+          <FadeUp delay={0.3} className="mt-9 flex justify-center"><SplitButton href="/devis">Obtenir un devis</SplitButton></FadeUp>
+        </div>
+      </PinnedCircleReveal>
+    </section>
+  </PageShell>;
 }
