@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { FolderFloat } from "@/components/ui/folder-float";
 import { SplitButton } from "@/components/ui/split-button";
 import { FadeUp, PinnedCircleReveal } from "@/components/scroll-fx";
 import { StackedProjects } from "@/components/ui/stacked-projects";
+import { listProjects } from "@/lib/backend/functions";
 import craftImage from "@/assets/lahlou-craft.jpg";
 import teamImage from "@/assets/lahlou-team.jpg";
 import projectImage from "@/assets/lahlou-project.jpg";
@@ -35,7 +36,22 @@ const projects = [
 
 function Realisations() {
   const [active, setActive] = useState("Tous");
-  const visible = active === "Tous" ? projects : projects.filter(p => p.type === active);
+  // Admin-added projects (from /admin/projects) are merged in here so they get
+  // the exact same StackedProjects motion as the historical ones — not a
+  // separate plain list.
+  // GSAP's pin setup mutates the DOM directly (wraps pinned nodes, inserts
+  // spacers) outside React's control. If `items` changes after that's already
+  // happened, React's next reconciliation pass crashes trying to diff against
+  // DOM it no longer recognizes. So StackedProjects only ever mounts once
+  // admin + static projects are already combined — never with a list that
+  // changes size after the fact.
+  const [adminProjects, setAdminProjects] = useState<{ name: string; city: string; year: string; type: string; image: string }[] | null>(null);
+  useEffect(() => {
+    listProjects().then(items => setAdminProjects(items.map(p => ({ name: p.title, city: p.city, year: p.year, type: p.category, image: p.image }))));
+  }, []);
+
+  const allProjects = [...(adminProjects ?? []), ...projects];
+  const visible = active === "Tous" ? allProjects : allProjects.filter(p => p.type === active);
 
   return <PageShell>
     <section className="relative mx-auto max-w-[1440px] overflow-hidden px-5 pb-10 pt-40 lg:px-8 lg:pt-48">
@@ -57,10 +73,12 @@ function Realisations() {
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <img src={archHouseRoof} alt="" aria-hidden className="absolute -right-40 top-0 hidden w-[720px] opacity-[0.22] mix-blend-multiply lg:block" />
       </div>
-      <StackedProjects
-        key={active}
-        items={visible.map(p => ({ category: p.type, title: p.name, description: `${p.city} · ${p.year}`, image: p.image }))}
-      />
+      {adminProjects !== null && (
+        <StackedProjects
+          key={active}
+          items={visible.map(p => ({ category: p.type, title: p.name, description: `${p.city} · ${p.year}`, image: p.image }))}
+        />
+      )}
     </section>
 
     <section id="contact">

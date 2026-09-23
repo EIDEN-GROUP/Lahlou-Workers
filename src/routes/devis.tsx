@@ -5,6 +5,7 @@ import { SplitButton } from "@/components/ui/split-button";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { FadeUp } from "@/components/scroll-fx";
 import { FormPanel, FormField, fieldClassName } from "@/components/ui/form-field";
+import { submitDevis } from "@/lib/backend/functions";
 import formBgBuildingSketch from "@/assets/decor/form-bg-building-sketch.png";
 
 export const Route = createFileRoute("/devis")({
@@ -40,7 +41,31 @@ function Devis() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initial);
   const [done, setDone] = useState(false);
+  const [sending, setSending] = useState(false);
   const totalSteps = 4;
+
+  const handleFinalSubmit = async () => {
+    setSending(true);
+    try {
+      await submitDevis({ data: {
+        need: form.need,
+        city: form.city,
+        surface: form.surface,
+        startDate: form.startDate,
+        duration: form.duration,
+        trades: form.tradesSelected,
+        crewSize: form.crewSize,
+        name: form.name,
+        company: form.company,
+        phone: form.phone,
+        email: form.email,
+        channel: form.channel,
+      } });
+      setDone(true);
+    } finally {
+      setSending(false);
+    }
+  };
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm(f => ({ ...f, [key]: value }));
   const toggleTrade = (t: string) => setForm(f => ({ ...f, tradesSelected: f.tradesSelected.includes(t) ? f.tradesSelected.filter(x => x !== t) : [...f.tradesSelected, t] }));
@@ -111,7 +136,7 @@ function Devis() {
               <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} className="flex items-center gap-2 text-sm font-semibold disabled:opacity-30"><ArrowLeft className="h-4 w-4" /> Retour</button>
               {step < totalSteps - 1
                 ? <SplitButton dark icon={ArrowRight} disabled={!canNext} onClick={() => setStep(s => s + 1)}>Suivant</SplitButton>
-                : <SplitButton dark icon={Check} disabled={!canNext} onClick={() => setDone(true)}>Envoyer</SplitButton>}
+                : <SplitButton dark icon={Check} disabled={!canNext || sending} onClick={handleFinalSubmit}>{sending ? "Envoi…" : "Envoyer"}</SplitButton>}
             </div>
           </FormPanel>
         </>}

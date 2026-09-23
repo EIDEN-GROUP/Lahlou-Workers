@@ -5,6 +5,7 @@ import { SplitButton } from "@/components/ui/split-button";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { FadeUp } from "@/components/scroll-fx";
 import { FormPanel, FormField, fieldClassName, textareaClassName } from "@/components/ui/form-field";
+import { submitContact } from "@/lib/backend/functions";
 import archCanopy from "@/assets/decor/arch-canopy.png";
 import archTowerTall from "@/assets/decor/arch-tower-tall.png";
 import formBgBuildingSketch from "@/assets/decor/form-bg-building-sketch.png";
@@ -27,7 +28,23 @@ const rows = [
 
 function Contact() {
   const [submitted, setSubmitted] = useState(false);
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => { e.preventDefault(); setSubmitted(true); };
+  const [sending, setSending] = useState(false);
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSending(true);
+    try {
+      await submitContact({ data: {
+        name: String(fd.get("name") ?? ""),
+        phone: String(fd.get("phone") ?? ""),
+        email: String(fd.get("email") ?? ""),
+        message: String(fd.get("message") ?? ""),
+      } });
+      setSubmitted(true);
+    } finally {
+      setSending(false);
+    }
+  };
 
   return <PageShell header="dark">
     <section className="relative mx-auto grid max-w-[1440px] gap-16 overflow-hidden bg-foreground px-5 pb-24 pt-40 text-background lg:grid-cols-12 lg:px-8 lg:pb-36 lg:pt-48">
@@ -45,12 +62,12 @@ function Contact() {
           <FormPanel className="mt-10">
             <form onSubmit={handleSubmit} className="grid gap-6">
               <div className="grid gap-6 sm:grid-cols-2">
-                <FormField label="Nom" icon={User}><input required type="text" placeholder="Votre nom" className={fieldClassName} /></FormField>
-                <FormField label="Téléphone" icon={Phone}><input required type="tel" placeholder="+212 6 00 00 00 00" className={fieldClassName} /></FormField>
+                <FormField label="Nom" icon={User}><input required name="name" type="text" placeholder="Votre nom" className={fieldClassName} /></FormField>
+                <FormField label="Téléphone" icon={Phone}><input required name="phone" type="tel" placeholder="+212 6 00 00 00 00" className={fieldClassName} /></FormField>
               </div>
-              <FormField label="Email" icon={Mail}><input required type="email" placeholder="vous@exemple.com" className={fieldClassName} /></FormField>
-              <FormField label="Message" icon={MessageSquare}><textarea required rows={5} placeholder="Décrivez votre besoin…" className={textareaClassName} /></FormField>
-              <SplitButton type="submit" className="mt-2">Envoyer</SplitButton>
+              <FormField label="Email" icon={Mail}><input required name="email" type="email" placeholder="vous@exemple.com" className={fieldClassName} /></FormField>
+              <FormField label="Message" icon={MessageSquare}><textarea required name="message" rows={5} placeholder="Décrivez votre besoin…" className={textareaClassName} /></FormField>
+              <SplitButton type="submit" disabled={sending} className="mt-2">{sending ? "Envoi…" : "Envoyer"}</SplitButton>
             </form>
           </FormPanel>
         )}

@@ -14,6 +14,12 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DevisRouteImport } from './routes/devis'
 import { Route as RealisationsRouteImport } from './routes/realisations'
 import { Route as RecrutementRouteImport } from './routes/recrutement'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminContactsRouteImport } from './routes/admin.contacts'
+import { Route as AdminDevisRouteImport } from './routes/admin.devis'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminProjectsRouteImport } from './routes/admin.projects'
+import { Route as AdminRecrutementRouteImport } from './routes/admin.recrutement'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +46,36 @@ const RecrutementRoute = RecrutementRouteImport.update({
   path: '/recrutement',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminContactsRoute = AdminContactsRouteImport.update({
+  id: '/admin/contacts',
+  path: '/admin/contacts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDevisRoute = AdminDevisRouteImport.update({
+  id: '/admin/devis',
+  path: '/admin/devis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProjectsRoute = AdminProjectsRouteImport.update({
+  id: '/admin/projects',
+  path: '/admin/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRecrutementRoute = AdminRecrutementRouteImport.update({
+  id: '/admin/recrutement',
+  path: '/admin/recrutement',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +83,12 @@ export interface FileRoutesByFullPath {
   '/devis': typeof DevisRoute
   '/realisations': typeof RealisationsRoute
   '/recrutement': typeof RecrutementRoute
+  '/admin/contacts': typeof AdminContactsRoute
+  '/admin/devis': typeof AdminDevisRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/projects': typeof AdminProjectsRoute
+  '/admin/recrutement': typeof AdminRecrutementRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +96,12 @@ export interface FileRoutesByTo {
   '/devis': typeof DevisRoute
   '/realisations': typeof RealisationsRoute
   '/recrutement': typeof RecrutementRoute
+  '/admin/contacts': typeof AdminContactsRoute
+  '/admin/devis': typeof AdminDevisRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/projects': typeof AdminProjectsRoute
+  '/admin/recrutement': typeof AdminRecrutementRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,14 +110,53 @@ export interface FileRoutesById {
   '/devis': typeof DevisRoute
   '/realisations': typeof RealisationsRoute
   '/recrutement': typeof RecrutementRoute
+  '/admin/contacts': typeof AdminContactsRoute
+  '/admin/devis': typeof AdminDevisRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/projects': typeof AdminProjectsRoute
+  '/admin/recrutement': typeof AdminRecrutementRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contact' | '/devis' | '/realisations' | '/recrutement'
+  fullPaths:
+    | '/'
+    | '/contact'
+    | '/devis'
+    | '/realisations'
+    | '/recrutement'
+    | '/admin/contacts'
+    | '/admin/devis'
+    | '/admin/login'
+    | '/admin/projects'
+    | '/admin/recrutement'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contact' | '/devis' | '/realisations' | '/recrutement'
+  to:
+    | '/'
+    | '/contact'
+    | '/devis'
+    | '/realisations'
+    | '/recrutement'
+    | '/admin/contacts'
+    | '/admin/devis'
+    | '/admin/login'
+    | '/admin/projects'
+    | '/admin/recrutement'
+    | '/admin'
   id:
-    '__root__' | '/' | '/contact' | '/devis' | '/realisations' | '/recrutement'
+    | '__root__'
+    | '/'
+    | '/contact'
+    | '/devis'
+    | '/realisations'
+    | '/recrutement'
+    | '/admin/contacts'
+    | '/admin/devis'
+    | '/admin/login'
+    | '/admin/projects'
+    | '/admin/recrutement'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,6 +165,12 @@ export interface RootRouteChildren {
   DevisRoute: typeof DevisRoute
   RealisationsRoute: typeof RealisationsRoute
   RecrutementRoute: typeof RecrutementRoute
+  AdminContactsRoute: typeof AdminContactsRoute
+  AdminDevisRoute: typeof AdminDevisRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminProjectsRoute: typeof AdminProjectsRoute
+  AdminRecrutementRoute: typeof AdminRecrutementRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -117,6 +210,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecrutementRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/contacts': {
+      id: '/admin/contacts'
+      path: '/admin/contacts'
+      fullPath: '/admin/contacts'
+      preLoaderRoute: typeof AdminContactsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/devis': {
+      id: '/admin/devis'
+      path: '/admin/devis'
+      fullPath: '/admin/devis'
+      preLoaderRoute: typeof AdminDevisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/projects': {
+      id: '/admin/projects'
+      path: '/admin/projects'
+      fullPath: '/admin/projects'
+      preLoaderRoute: typeof AdminProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/recrutement': {
+      id: '/admin/recrutement'
+      path: '/admin/recrutement'
+      fullPath: '/admin/recrutement'
+      preLoaderRoute: typeof AdminRecrutementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -126,6 +261,12 @@ const rootRouteChildren: RootRouteChildren = {
   DevisRoute: DevisRoute,
   RealisationsRoute: RealisationsRoute,
   RecrutementRoute: RecrutementRoute,
+  AdminContactsRoute: AdminContactsRoute,
+  AdminDevisRoute: AdminDevisRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminProjectsRoute: AdminProjectsRoute,
+  AdminRecrutementRoute: AdminRecrutementRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

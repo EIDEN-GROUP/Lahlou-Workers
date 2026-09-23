@@ -5,6 +5,7 @@ import { SplitButton } from "@/components/ui/split-button";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { FadeUp, HeroParallax, Stagger, StaggerItem } from "@/components/scroll-fx";
 import { FormPanel, FormField, fieldClassName } from "@/components/ui/form-field";
+import { submitRecruit } from "@/lib/backend/functions";
 import heroImage from "@/assets/lahlou-hero.jpg";
 import archPencils from "@/assets/decor/arch-pencils.png";
 import archTerrace from "@/assets/decor/arch-terrace.png";
@@ -29,10 +30,24 @@ const trades = ["Maçon", "Coffreur", "Ferrailleur", "Peintre", "Carreleur", "Pl
 
 function Recrutement() {
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
+    const fd = new FormData(e.currentTarget);
+    setSending(true);
+    try {
+      await submitRecruit({ data: {
+        name: String(fd.get("name") ?? ""),
+        trade: String(fd.get("trade") ?? ""),
+        experience: String(fd.get("experience") ?? ""),
+        city: String(fd.get("city") ?? ""),
+        phone: String(fd.get("phone") ?? ""),
+      } });
+      setSubmitted(true);
+    } finally {
+      setSending(false);
+    }
   };
 
   return <PageShell header="hero">
@@ -68,19 +83,19 @@ function Recrutement() {
           <FadeUp delay={0.15}>
             <FormPanel className="mt-10">
               <form onSubmit={handleSubmit} className="grid gap-6">
-                <FormField label="Nom complet" icon={User}><input required type="text" placeholder="Votre nom" className={fieldClassName} /></FormField>
+                <FormField label="Nom complet" icon={User}><input required name="name" type="text" placeholder="Votre nom" className={fieldClassName} /></FormField>
                 <FormField label="Métier" icon={Briefcase}>
-                  <select required defaultValue="" className={fieldClassName}>
+                  <select required name="trade" defaultValue="" className={fieldClassName}>
                     <option value="" disabled>Choisir un métier</option>
                     {trades.map(t => <option key={t} value={t} className="text-foreground">{t}</option>)}
                   </select>
                 </FormField>
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <FormField label="Années d’expérience" icon={Calendar}><input required type="number" min={0} placeholder="0" className={fieldClassName} /></FormField>
-                  <FormField label="Ville" icon={MapPin}><input required type="text" placeholder="Agadir" className={fieldClassName} /></FormField>
+                  <FormField label="Années d’expérience" icon={Calendar}><input required name="experience" type="number" min={0} placeholder="0" className={fieldClassName} /></FormField>
+                  <FormField label="Ville" icon={MapPin}><input required name="city" type="text" placeholder="Agadir" className={fieldClassName} /></FormField>
                 </div>
-                <FormField label="Téléphone ou WhatsApp" icon={Phone}><input required type="tel" placeholder="+212 6 00 00 00 00" className={fieldClassName} /></FormField>
-                <SplitButton type="submit" dark className="mt-2">Postuler</SplitButton>
+                <FormField label="Téléphone ou WhatsApp" icon={Phone}><input required name="phone" type="tel" placeholder="+212 6 00 00 00 00" className={fieldClassName} /></FormField>
+                <SplitButton type="submit" dark disabled={sending} className="mt-2">{sending ? "Envoi…" : "Postuler"}</SplitButton>
               </form>
             </FormPanel>
           </FadeUp>
