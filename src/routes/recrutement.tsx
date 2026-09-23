@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { User, Briefcase, Calendar, MapPin, Phone, Check } from "lucide-react";
 import { SplitButton } from "@/components/ui/split-button";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { FadeUp, HeroParallax, Stagger, StaggerItem } from "@/components/scroll-fx";
+import { FormPanel, FormField, fieldClassName } from "@/components/ui/form-field";
 import heroImage from "@/assets/lahlou-hero.jpg";
 import archPencils from "@/assets/decor/arch-pencils.png";
 import archTerrace from "@/assets/decor/arch-terrace.png";
+import formBgBuildingSketch from "@/assets/decor/form-bg-building-sketch.png";
 
 export const Route = createFileRoute("/recrutement")({
   head: () => ({ meta: [
@@ -52,23 +55,34 @@ function Recrutement() {
       <FadeUp delay={0.1} className="mt-6 flex flex-wrap gap-2">{trades.map(t => <span key={t} className="border border-border px-4 py-2 text-xs font-semibold text-muted-foreground">{t}</span>)}</FadeUp>
     </section>
 
-    <section className="bg-foreground py-20 text-background lg:py-32">
-      <div className="mx-auto max-w-2xl px-5 lg:px-8">
+    <section className="relative overflow-hidden bg-foreground py-20 text-background lg:py-32">
+      <img src={formBgBuildingSketch} alt="" aria-hidden className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-40" />
+      <div className="relative mx-auto max-w-2xl px-5 lg:px-8">
         <FadeUp><Eyebrow label="Postuler" /><h2 className="mt-6 font-display text-3xl font-bold lg:text-5xl">Rejoindre l’équipe.</h2></FadeUp>
         {submitted ? (
-          <FadeUp className="mt-12 border-t border-background/20 pt-10"><p className="font-display text-2xl font-bold">Merci.</p><p className="mt-3 text-muted-foreground">On vous rappelle sous 48 h.</p></FadeUp>
+          <FormPanel className="mt-10 flex items-center gap-4">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-primary bg-primary/15"><Check className="h-5 w-5 text-primary" /></span>
+            <div><p className="font-display text-xl font-bold">Merci.</p><p className="mt-1 text-sm text-background/70">On vous rappelle sous 48 h.</p></div>
+          </FormPanel>
         ) : (
           <FadeUp delay={0.15}>
-            <form onSubmit={handleSubmit} className="mt-12 grid gap-6 border-t border-background/20 pt-10">
-              <label className="grid gap-2 text-sm font-semibold">Nom complet<input required type="text" className="h-14 border border-background/25 bg-transparent px-4 text-base appearance-none rounded-none outline-none focus:border-primary" /></label>
-              <label className="grid gap-2 text-sm font-semibold">Métier<select required defaultValue="" className="h-14 border border-background/25 bg-transparent px-4 text-base appearance-none rounded-none outline-none focus:border-primary"><option value="" disabled>Choisir un métier</option>{trades.map(t => <option key={t} value={t} className="text-foreground">{t}</option>)}</select></label>
-              <div className="grid gap-6 sm:grid-cols-2">
-                <label className="grid gap-2 text-sm font-semibold">Années d’expérience<input required type="number" min={0} className="h-14 border border-background/25 bg-transparent px-4 text-base appearance-none rounded-none outline-none focus:border-primary" /></label>
-                <label className="grid gap-2 text-sm font-semibold">Ville<input required type="text" className="h-14 border border-background/25 bg-transparent px-4 text-base appearance-none rounded-none outline-none focus:border-primary" /></label>
-              </div>
-              <label className="grid gap-2 text-sm font-semibold">Téléphone ou WhatsApp<input required type="tel" className="h-14 border border-background/25 bg-transparent px-4 text-base appearance-none rounded-none outline-none focus:border-primary" /></label>
-              <SplitButton type="submit" dark className="mt-4">Postuler</SplitButton>
-            </form>
+            <FormPanel className="mt-10">
+              <form onSubmit={handleSubmit} className="grid gap-6">
+                <FormField label="Nom complet" icon={User}><input required type="text" placeholder="Votre nom" className={fieldClassName} /></FormField>
+                <FormField label="Métier" icon={Briefcase}>
+                  <select required defaultValue="" className={fieldClassName}>
+                    <option value="" disabled>Choisir un métier</option>
+                    {trades.map(t => <option key={t} value={t} className="text-foreground">{t}</option>)}
+                  </select>
+                </FormField>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <FormField label="Années d’expérience" icon={Calendar}><input required type="number" min={0} placeholder="0" className={fieldClassName} /></FormField>
+                  <FormField label="Ville" icon={MapPin}><input required type="text" placeholder="Agadir" className={fieldClassName} /></FormField>
+                </div>
+                <FormField label="Téléphone ou WhatsApp" icon={Phone}><input required type="tel" placeholder="+212 6 00 00 00 00" className={fieldClassName} /></FormField>
+                <SplitButton type="submit" dark className="mt-2">Postuler</SplitButton>
+              </form>
+            </FormPanel>
           </FadeUp>
         )}
       </div>

@@ -157,12 +157,12 @@ export function SiteFooter() {
         <div className="flex flex-col gap-3 pt-6 text-xs text-muted-foreground sm:flex-row sm:justify-between"><span>© 2026 Lahlou Workers — ICE 003157258000059 · RC 053457</span><span>Gros œuvre · Travaux d’aménagement</span></div>
         <div className="pt-3 text-xs text-muted-foreground/70">Développé par Eiden Group</div>
       </div>
-      <div className="relative overflow-hidden border-t border-background/10 py-6 lg:py-10">
+      <div className="relative flex h-[90px] items-center justify-center overflow-hidden border-t border-background/10 lg:h-[150px]">
         <img
           src={footerWordmarkScaffold}
           alt="Lahlou Workers"
           aria-hidden
-          className="mx-auto w-full max-w-none opacity-60 lg:w-[90%]"
+          className="h-full w-auto max-w-none opacity-60"
         />
       </div>
     </footer>
