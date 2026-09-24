@@ -249,30 +249,34 @@ const HOLD_END = 0.12;
 const SCATTER_END = 0.9;
 
 // Cross layout: images ring a central headline instead of tiling a grid —
-// a top row, a row flanking the headline, and a bottom row.
+// a top row, a row flanking the headline, and a bottom row. Sizes are
+// deliberately mixed (wide landscape, tall portrait, near-square) so the
+// spread reads as an editorial collage rather than a uniform grid of
+// identical cards.
 const CROSS_LAYOUT_DESKTOP: Record<number, SpreadLayoutItem[]> = {
   7: [
-    { top: 4, left: 22, width: 18, height: 30 },
-    { top: 6, left: 44, width: 20, height: 34 },
-    { top: 2, left: 66, width: 18, height: 36 },
-    { top: 40, left: 5, width: 17, height: 32 },
-    { top: 42, left: 78, width: 17, height: 32 },
-    { top: 76, left: 30, width: 18, height: 24 },
-    { top: 70, left: 54, width: 18, height: 30 },
+    { top: 6, left: 14, width: 20, height: 26 },
+    { top: 2, left: 42, width: 15, height: 34 },
+    { top: 4, left: 64, width: 20, height: 30 },
+    { top: 42, left: 2, width: 14, height: 36 },
+    { top: 44, left: 80, width: 20, height: 24 },
+    { top: 76, left: 26, width: 17, height: 22 },
+    { top: 70, left: 50, width: 22, height: 18 },
   ],
 };
 
-// Fixed ±22vw 2-column grid, rows stacked top to bottom, with a gap left
-// open around 38-62% of the height for the headline to sit in.
+// Fixed 2-column grid, rows stacked top to bottom, with a gap left open
+// around 36-64% of the height for the headline to sit in. Row heights
+// alternate short/tall per column instead of a repeating uniform card.
 const CROSS_LAYOUT_MOBILE: Record<number, SpreadLayoutItem[]> = {
   7: [
-    { top: 2, left: 6, width: 40, height: 15 },
-    { top: 2, left: 54, width: 40, height: 15 },
-    { top: 19, left: 6, width: 40, height: 15 },
-    { top: 19, left: 54, width: 40, height: 15 },
-    { top: 63, left: 6, width: 40, height: 15 },
-    { top: 63, left: 54, width: 40, height: 15 },
-    { top: 80, left: 30, width: 40, height: 15 },
+    { top: 2, left: 5, width: 42, height: 18 },
+    { top: 2, left: 53, width: 42, height: 14 },
+    { top: 22, left: 5, width: 42, height: 14 },
+    { top: 18, left: 53, width: 42, height: 20 },
+    { top: 64, left: 5, width: 42, height: 20 },
+    { top: 66, left: 53, width: 42, height: 14 },
+    { top: 84, left: 27, width: 46, height: 14 },
   ],
 };
 
