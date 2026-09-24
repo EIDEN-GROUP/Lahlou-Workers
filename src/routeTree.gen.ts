@@ -20,6 +20,7 @@ import { Route as AdminDevisRouteImport } from './routes/admin.devis'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminProjectsRouteImport } from './routes/admin.projects'
 import { Route as AdminRecrutementRouteImport } from './routes/admin.recrutement'
+import { Route as RealisationsSlugRouteImport } from './routes/realisations_.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +77,11 @@ const AdminRecrutementRoute = AdminRecrutementRouteImport.update({
   path: '/admin/recrutement',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RealisationsSlugRoute = RealisationsSlugRouteImport.update({
+  id: '/realisations_/$slug',
+  path: '/realisations/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/recrutement': typeof AdminRecrutementRoute
+  '/realisations/$slug': typeof RealisationsSlugRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/recrutement': typeof AdminRecrutementRoute
+  '/realisations/$slug': typeof RealisationsSlugRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/projects': typeof AdminProjectsRoute
   '/admin/recrutement': typeof AdminRecrutementRoute
+  '/realisations_/$slug': typeof RealisationsSlugRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/projects'
     | '/admin/recrutement'
+    | '/realisations/$slug'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/projects'
     | '/admin/recrutement'
+    | '/realisations/$slug'
     | '/admin'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/projects'
     | '/admin/recrutement'
+    | '/realisations_/$slug'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminProjectsRoute: typeof AdminProjectsRoute
   AdminRecrutementRoute: typeof AdminRecrutementRoute
+  RealisationsSlugRoute: typeof RealisationsSlugRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRecrutementRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/realisations_/$slug': {
+      id: '/realisations_/$slug'
+      path: '/realisations/$slug'
+      fullPath: '/realisations/$slug'
+      preLoaderRoute: typeof RealisationsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -266,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminProjectsRoute: AdminProjectsRoute,
   AdminRecrutementRoute: AdminRecrutementRoute,
+  RealisationsSlugRoute: RealisationsSlugRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -6,7 +6,7 @@ import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { FadeUp, HeroParallax, Stagger, StaggerItem } from "@/components/scroll-fx";
 import { FormPanel, FormField, fieldClassName } from "@/components/ui/form-field";
 import { submitRecruit } from "@/lib/backend/functions";
-import heroImage from "@/assets/lahlou-hero.webp";
+import heroImage from "@/assets/recrutement-hero.webp";
 import archPencils from "@/assets/decor/arch-pencils.webp";
 import archTerrace from "@/assets/decor/arch-terrace.webp";
 import formBgBuildingSketch from "@/assets/decor/form-bg-building-sketch.webp";
@@ -83,7 +83,7 @@ function Recrutement() {
   return (
     <PageShell header="hero">
       <section className="relative min-h-[70svh] overflow-hidden bg-foreground text-background">
-        <HeroParallax src={heroImage} alt="Ouvriers Lahlou Workers sur chantier" />
+        <HeroParallax src={heroImage} alt="Chantier Lahlou Workers au coucher du soleil, grue et casque de chantier rouge" />
         <div className="absolute inset-0 bg-foreground/55" />
         <div className="relative mx-auto flex min-h-[70svh] max-w-[1440px] flex-col justify-end px-5 pb-16 pt-32 lg:px-8">
           <FadeUp>

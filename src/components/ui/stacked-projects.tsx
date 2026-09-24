@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { SplitButton } from "@/components/ui/split-button";
 import decoHouseElevation from "@/assets/decor/deco-house-elevation.webp";
 import decoCrane from "@/assets/decor/deco-crane.webp";
 import decoBlueprintRolls from "@/assets/decor/deco-blueprint-rolls.webp";
@@ -21,6 +22,9 @@ export type StackedProject = {
   title: string;
   description: string;
   image: string;
+  // Optional — only historical projects with a real detail page get one.
+  // Admin-added projects and the homepage teaser simply omit it.
+  href?: string;
 };
 
 // How much the covered card shrinks and tilts (tweak to taste). No darkening
@@ -45,13 +49,19 @@ const TONES = [
     muted: "text-muted-foreground",
     deco: decoHouseElevation,
     blend: "mix-blend-multiply" as const,
+    decoOpacity: "opacity-25",
   },
   {
     bg: "bg-foreground",
     text: "text-background",
     muted: "text-background/60",
     deco: decoSiteAerialDark,
-    blend: "mix-blend-screen" as const,
+    // This asset is black line-art on white/transparent, same as the others —
+    // neither multiply nor screen can make black lines visible on a black
+    // card (both are no-ops on black-on-black). Invert it to white line-art
+    // first, then plain opacity actually shows it.
+    blend: "invert",
+    decoOpacity: "opacity-40",
   },
   {
     bg: "bg-primary",
@@ -59,6 +69,7 @@ const TONES = [
     muted: "text-primary-foreground/70",
     deco: decoCrane,
     blend: "mix-blend-multiply" as const,
+    decoOpacity: "opacity-30",
   },
 ];
 
@@ -169,7 +180,8 @@ export function StackedProjects({
                 }
                 alt=""
                 aria-hidden
-                className={`pointer-events-none absolute inset-x-0 bottom-[18%] top-[30%] mx-auto w-[85%] object-contain opacity-25 lg:w-[70%] ${tone.blend}`}
+                className={`pointer-events-none absolute inset-x-0 bottom-[18%] top-[30%] mx-auto w-[85%] object-contain lg:w-[70%] ${tone.blend === "invert" ? "" : tone.blend} ${tone.decoOpacity}`}
+                style={tone.blend === "invert" ? { filter: "invert(1)" } : undefined}
               />
               <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                 <h2 className="font-display text-[9vw] font-bold uppercase leading-[0.9] sm:text-[7vw] lg:text-[7vw]">
@@ -195,6 +207,11 @@ export function StackedProjects({
                   <p className={`mt-3 text-base leading-relaxed lg:text-lg ${tone.muted}`}>
                     {p.description}
                   </p>
+                  {p.href && (
+                    <SplitButton href={p.href} dark={i % TONES.length === 2} className="mt-5">
+                      Voir le projet
+                    </SplitButton>
+                  )}
                 </div>
               </div>
             </div>

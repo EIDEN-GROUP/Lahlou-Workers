@@ -44,6 +44,7 @@ const projects = [
     type: "Résidentiel",
     image: projectImage,
     ratio: "aspect-[4/5]",
+    href: "/realisations/residences-missimi",
   },
   {
     name: "Immeuble R+5 | post-tension",
@@ -167,6 +168,7 @@ function Realisations() {
               title: p.name,
               description: `${p.city} · ${p.year}`,
               image: p.image,
+              ...("href" in p ? { href: p.href as string } : {}),
             }))}
           />
         )}
