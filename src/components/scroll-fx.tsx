@@ -399,10 +399,13 @@ export function StackToSpread({
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const isDesktop = useIsDesktop();
   const finalLayout = layout ?? buildCrossLayout(items.length, isDesktop);
-  // The headline fades/scales in from 30% scroll, during the scatter phase,
-  // and stays centered on the page's core message while tiles move around it.
-  const titleOpacity = useTransform(scrollYProgress, [0.3, 0.55], [0, 1], { clamp: true });
-  const titleScale = useTransform(scrollYProgress, [0.3, 0.55], [0.92, 1], { clamp: true });
+  // The headline reveals right at the tail of the scatter phase, once the
+  // tiles have essentially finished settling into place — the payoff lands
+  // after the collection opens up, not partway through it, and (clamped)
+  // never fades back out once shown, all the way through the settle phase
+  // and beyond.
+  const titleOpacity = useTransform(scrollYProgress, [SCATTER_END * 0.82, SCATTER_END], [0, 1], { clamp: true });
+  const titleScale = useTransform(scrollYProgress, [SCATTER_END * 0.82, SCATTER_END], [0.92, 1], { clamp: true });
 
   return (
     <div ref={ref} className="relative" style={{ height: `${scrollVh}svh` }}>
