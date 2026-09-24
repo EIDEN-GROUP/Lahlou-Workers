@@ -19,6 +19,7 @@ import resultAerial from "@/assets/results/result-aerial.webp";
 import resultEntrance from "@/assets/results/result-entrance.webp";
 import resultRooftop from "@/assets/results/result-rooftop.webp";
 import resultDetail from "@/assets/results/result-detail.webp";
+import decoStepArrow from "@/assets/decor/deco-step-arrow.webp";
 
 export const Route = createFileRoute("/realisations_/$slug")({
   loader: ({ params }) => {
@@ -179,6 +180,12 @@ function ProjectDetail() {
       </section>
 
       <section id="next" className="relative overflow-hidden bg-muted py-24 text-foreground lg:py-36">
+        <img
+          src={decoStepArrow}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute -left-24 bottom-10 hidden w-[420px] opacity-[0.22] mix-blend-multiply lg:block"
+        />
         <div className="relative mx-auto flex max-w-[1440px] flex-col items-center px-5 text-center lg:px-8">
           <FadeUp className="flex justify-center">
             <Eyebrow label="Projet suivant" />
