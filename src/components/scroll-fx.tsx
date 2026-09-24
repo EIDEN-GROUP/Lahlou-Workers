@@ -400,36 +400,32 @@ export function StackToSpread({
   const isDesktop = useIsDesktop();
   const finalLayout = layout ?? buildCrossLayout(items.length, isDesktop);
   // The headline reveals right at the tail of the scatter phase, once the
-  // tiles have essentially finished settling into place — the payoff lands
-  // after the collection opens up, not partway through it. It then fades
-  // back out before the section fully releases, so it never lingers/looks
-  // "stuck" on screen once you've scrolled on to the next section.
-  const titleOpacity = useTransform(
-    scrollYProgress,
-    [SCATTER_END * 0.82, SCATTER_END, 0.96, 1],
-    [0, 1, 1, 0],
-    { clamp: true },
-  );
-  const titleScale = useTransform(
-    scrollYProgress,
-    [SCATTER_END * 0.82, SCATTER_END, 0.96, 1],
-    [0.92, 1, 1, 0.96],
-    { clamp: true },
-  );
+  // tiles have essentially finished settling into place, and is gone again
+  // just before the pin releases. Driven as a real mount/unmount (via
+  // AnimatePresence) rather than a continuous opacity tied to scroll
+  // position — a discrete on/off avoids any window where the math is a
+  // touch off and the text is left showing (or half-showing) once the
+  // section has handed off to whatever comes next.
+  const revealAt = SCATTER_END * 0.82;
+  const [showTitle, setShowTitle] = useState(false);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    setShowTitle(v >= revealAt && v < 0.97);
+  });
 
   return (
     <div ref={ref} className="relative" style={{ height: `${scrollVh}svh` }}>
       <div className={`sticky top-0 h-svh w-full overflow-hidden ${className ?? ""}`}>
-        {(title || subtitle || cta) && (
+        <AnimatePresence>
+        {(title || subtitle || cta) && showTitle && (
           <motion.div
-            // Above every tile (max z-index is `total`) so once it fades in it
-            // actually reads instead of sitting clipped behind the artwork.
-            // The -50% Y centering has to live in this same `style` object,
-            // not a Tailwind `-translate-y-1/2` class — Motion writes its own
-            // inline `transform` for `scale`, which silently wins over (and
-            // wipes out) any transform set by a class on the same element.
+            key="stack-spread-title"
+            // Above every tile (max z-index is `total`) so it actually reads
+            // instead of sitting clipped behind the artwork.
             className="pointer-events-none absolute inset-x-0 top-1/2 z-50 px-5 text-center"
-            style={{ opacity: titleOpacity, scale: titleScale, y: "-50%" }}
+            initial={{ opacity: 0, scale: 0.92, y: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: "-50%" }}
+            exit={{ opacity: 0, scale: 0.92, y: "-50%" }}
+            transition={{ duration: 0.35, ease: easeOut }}
           >
             {title && (
               <h2 className="font-display text-3xl font-bold uppercase leading-[0.95] text-foreground drop-shadow-[0_2px_24px_rgba(0,0,0,0.15)] lg:text-6xl">
@@ -444,6 +440,7 @@ export function StackToSpread({
             {cta && <div className="pointer-events-auto mt-6 flex justify-center">{cta}</div>}
           </motion.div>
         )}
+        </AnimatePresence>
         {items.map((item, i) => (
           <SpreadTile
             key={item.src}
