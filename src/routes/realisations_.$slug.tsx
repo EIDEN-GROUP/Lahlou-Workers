@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { SplitButton } from "@/components/ui/split-button";
-import { FadeUp, PinnedCircleReveal, StickySteps } from "@/components/scroll-fx";
+import { FadeUp, FloatingCircleLink, ScrollTimeline, StackToSpread } from "@/components/scroll-fx";
 import projectImage from "@/assets/lahlou-project.webp";
 import stepSurveying from "@/assets/decor/step-surveying.webp";
 import stepFoundation from "@/assets/decor/step-foundation.webp";
@@ -148,70 +148,60 @@ function ProjectDetail() {
         </FadeUp>
       </section>
 
-      <StickySteps
-        steps={steps}
+      <ScrollTimeline
+        items={steps}
+        className="pb-16 lg:pb-24"
+        renderLabel={(_step, i) => `Étape ${String(i + 1).padStart(2, "0")}`}
         renderImage={(step) => (
           <img
             src={step.image}
             alt={step.title}
-            className="h-full w-full rounded-[2rem] border border-border object-contain bg-background p-8"
+            className="h-full w-full object-contain p-6"
           />
         )}
         renderContent={(step) => (
           <div>
-            <h3 className="font-display text-2xl font-bold lg:text-3xl">{step.title}</h3>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg">
+            <h3 className="font-display text-xl font-bold lg:text-2xl">{step.title}</h3>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground lg:text-base">
               {step.text}
             </p>
           </div>
         )}
       />
 
-      <section className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-32">
-        <FadeUp>
-          <Eyebrow label="Résultats" />
-          <h2 className="mt-4 font-display text-2xl font-bold lg:text-4xl">
-            Le chantier livré.
-          </h2>
-        </FadeUp>
-        <FadeUp delay={0.1} className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-          {gallery.map((g, i) => (
-            <div
-              key={g.src}
-              className={`overflow-hidden rounded-2xl ${i === 0 ? "col-span-2 row-span-2 aspect-square lg:aspect-auto" : "aspect-square"}`}
-            >
-              <img
-                src={g.src}
-                alt={g.alt}
-                loading="lazy"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          ))}
-        </FadeUp>
+      <section className="relative mx-auto max-w-[1440px] px-5 pb-20 lg:px-8 lg:pb-32">
+        <StackToSpread
+          items={gallery}
+          title="Le chantier livré."
+          subtitle="Résidences MISSIMI, du gros œuvre aux finitions - clé en main."
+          cta={<SplitButton href="/devis">Demander un devis similaire</SplitButton>}
+        />
       </section>
 
-      <section id="next">
-        <PinnedCircleReveal className="flex h-svh items-center justify-center overflow-hidden bg-foreground text-background">
-          <div className="relative mx-auto max-w-[1440px] px-5 text-center lg:px-8">
-            <FadeUp className="flex justify-center">
-              <Eyebrow label="Projet suivant" />
-            </FadeUp>
-            <FadeUp delay={0.1}>
-              <h2 className="mx-auto mt-8 max-w-3xl font-display text-[28px] font-bold uppercase leading-[0.95] lg:text-[56px]">
-                {project.next.name}
-              </h2>
-            </FadeUp>
-            <FadeUp delay={0.2} className="mt-9 flex justify-center">
-              <SplitButton href={`/realisations/${project.next.slug}`}>Voir le projet</SplitButton>
-            </FadeUp>
-            <FadeUp delay={0.3} className="mt-4 flex justify-center">
-              <Link to="/realisations" className="text-sm text-background/60 hover:text-background">
-                Retour aux réalisations
-              </Link>
-            </FadeUp>
-          </div>
-        </PinnedCircleReveal>
+      <section id="next" className="relative overflow-hidden bg-muted py-24 text-foreground lg:py-36">
+        <div className="relative mx-auto flex max-w-[1440px] flex-col items-center px-5 text-center lg:px-8">
+          <FadeUp className="flex justify-center">
+            <Eyebrow label="Projet suivant" />
+          </FadeUp>
+          <FadeUp delay={0.1} className="mt-10 flex justify-center">
+            <FloatingCircleLink
+              href={`/realisations/${project.next.slug}`}
+              image={project.hero}
+              alt={project.next.name}
+              label="Voir le projet"
+            />
+          </FadeUp>
+          <FadeUp delay={0.2}>
+            <h2 className="mx-auto mt-12 max-w-3xl font-display text-[28px] font-bold uppercase leading-[0.95] lg:text-[56px]">
+              {project.next.name}
+            </h2>
+          </FadeUp>
+          <FadeUp delay={0.3} className="mt-6 flex justify-center">
+            <Link to="/realisations" className="text-sm text-muted-foreground hover:text-foreground">
+              Retour aux réalisations
+            </Link>
+          </FadeUp>
+        </div>
       </section>
     </PageShell>
   );

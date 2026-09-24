@@ -1,5 +1,6 @@
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type Variants } from "motion/react";
-import { useRef, useState, type ReactNode } from "react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type MotionValue, type Variants } from "motion/react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ArrowUpRight } from "lucide-react";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
@@ -157,6 +158,347 @@ export function PinnedCircleReveal({ children, className, scrollVh = 240, stopAt
         {children}
       </motion.div>
     </div>
+  );
+}
+
+// Scroll timeline — a vertical line down the center (desktop) or left edge
+// (mobile) that fills as you scroll, with cards alternating left/right and
+// their dot lighting up as they arrive. For roadmaps, company histories,
+// launch stories, and case-study progressions — time as a designed line,
+// not a dumped list.
+export function ScrollTimeline<T>({
+  items,
+  renderLabel,
+  renderContent,
+  renderImage,
+  className,
+}: {
+  items: T[];
+  renderLabel?: (item: T, index: number) => ReactNode;
+  renderContent: (item: T, index: number) => ReactNode;
+  renderImage?: (item: T, index: number) => ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 20%", "end 75%"] });
+  const lineHeight = useTransform(scrollYProgress, (v) => `${Math.min(Math.max(v, 0), 1) * 100}%`);
+
+  return (
+    <div ref={ref} className={`relative mx-auto max-w-[1440px] px-5 lg:px-8 ${className ?? ""}`}>
+      <div className="absolute left-[19px] top-0 h-full w-px bg-border lg:left-1/2">
+        <motion.div
+          className="absolute inset-x-0 top-0 w-px bg-primary"
+          style={{ height: lineHeight }}
+        />
+      </div>
+      <div className="flex flex-col gap-14 py-4 lg:gap-4">
+        {items.map((item, i) => {
+          const onRight = i % 2 === 1;
+          return (
+            <div
+              key={i}
+              className={`relative py-6 pl-14 lg:grid lg:grid-cols-2 lg:gap-x-20 lg:py-16 lg:pl-0`}
+            >
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true, margin: "-40% 0px -40% 0px" }}
+                transition={{ duration: 0.35, ease: easeOut }}
+                className="absolute left-[19px] top-9 z-10 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border-2 border-primary bg-background text-xs font-bold text-primary lg:left-1/2 lg:top-16"
+              >
+                {String(i + 1).padStart(2, "0")}
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
+                transition={{ duration: 0.6, ease: easeOut }}
+                className={onRight ? "lg:col-start-2 lg:pl-6" : "lg:col-start-1 lg:row-start-1 lg:pr-6 lg:text-right"}
+              >
+                {renderImage && (
+                  <div
+                    className={`mb-5 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-background ${onRight ? "" : "lg:ml-auto"}`}
+                  >
+                    {renderImage(item, i)}
+                  </div>
+                )}
+                {renderLabel && (
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {renderLabel(item, i)}
+                  </span>
+                )}
+                <div className="mt-2">{renderContent(item, i)}</div>
+              </motion.div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Stack-to-spread — a tight, fanned stack of images (compression) that pulls
+// apart into a composed layout around a central headline (expression) as you
+// scroll. Mirrors vault.hyperiux.com/effects/scroll-effects/stack-spread:
+// hold (0-12% scroll) -> scatter (12-90%, staggered per tile) -> settle
+// (90-100%). Desktop spreads into a cross around the headline; mobile (≤1024px)
+// collapses to a fixed 2-column grid with the headline breaking the flow.
+type SpreadLayoutItem = { top: number; left: number; width: number; height: number };
+
+const HOLD_END = 0.12;
+const SCATTER_END = 0.9;
+
+// Cross layout: images ring a central headline instead of tiling a grid —
+// a top row, a row flanking the headline, and a bottom row.
+const CROSS_LAYOUT_DESKTOP: Record<number, SpreadLayoutItem[]> = {
+  7: [
+    { top: 4, left: 22, width: 18, height: 30 },
+    { top: 6, left: 44, width: 20, height: 34 },
+    { top: 2, left: 66, width: 18, height: 36 },
+    { top: 40, left: 5, width: 17, height: 32 },
+    { top: 42, left: 78, width: 17, height: 32 },
+    { top: 76, left: 30, width: 18, height: 24 },
+    { top: 70, left: 54, width: 18, height: 30 },
+  ],
+};
+
+// Fixed ±22vw 2-column grid, rows stacked top to bottom, with a gap left
+// open around 38-62% of the height for the headline to sit in.
+const CROSS_LAYOUT_MOBILE: Record<number, SpreadLayoutItem[]> = {
+  7: [
+    { top: 2, left: 6, width: 40, height: 15 },
+    { top: 2, left: 54, width: 40, height: 15 },
+    { top: 19, left: 6, width: 40, height: 15 },
+    { top: 19, left: 54, width: 40, height: 15 },
+    { top: 63, left: 6, width: 40, height: 15 },
+    { top: 63, left: 54, width: 40, height: 15 },
+    { top: 80, left: 30, width: 40, height: 15 },
+  ],
+};
+
+// Generic fallback for counts without a hand-tuned cross layout: a plain
+// 4-column bento so the component never breaks on an unexpected item count.
+function buildBentoLayout(count: number): SpreadLayoutItem[] {
+  const cols = 4;
+  const colWidth = 23.5;
+  const rowHeight = 32;
+  const lefts = [0, 25.5, 51, 76.5];
+  const layout: SpreadLayoutItem[] = [
+    { top: 0, left: 0, width: colWidth * 2 + 2, height: rowHeight * 2 + 2 },
+  ];
+  const occupied = new Set(["0-0", "0-1", "1-0", "1-1"]);
+  let row = 0;
+  outer: while (layout.length < count) {
+    for (let col = 0; col < cols; col++) {
+      if (occupied.has(`${row}-${col}`)) continue;
+      layout.push({ top: row * (rowHeight + 2), left: lefts[col]!, width: colWidth, height: rowHeight });
+      if (layout.length >= count) break outer;
+    }
+    row++;
+  }
+  return layout;
+}
+
+function buildCrossLayout(count: number, isDesktop: boolean): SpreadLayoutItem[] {
+  const table = isDesktop ? CROSS_LAYOUT_DESKTOP : CROSS_LAYOUT_MOBILE;
+  return table[count] ?? buildBentoLayout(count);
+}
+
+// Tracks a CSS breakpoint client-side. Defaults to the mobile layout on the
+// server; harmless since at scroll 0 (the only state SSR/first paint ever
+// shows) every tile sits in the same stacked position regardless of which
+// final layout it's heading toward.
+function useIsDesktop(breakpoint = 1024) {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${breakpoint}px)`);
+    setIsDesktop(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [breakpoint]);
+  return isDesktop;
+}
+
+function SpreadTile({
+  progress,
+  index,
+  total,
+  final,
+  src,
+  alt,
+}: {
+  progress: MotionValue<number>;
+  index: number;
+  total: number;
+  final: SpreadLayoutItem;
+  src: string;
+  alt: string;
+}) {
+  // Stagger each tile's scatter window inside the shared 12-90% band so they
+  // peel apart one after another instead of all moving at once.
+  const staggerSpan = (SCATTER_END - HOLD_END) * 0.6;
+  const start = HOLD_END + (index / Math.max(total - 1, 1)) * ((SCATTER_END - HOLD_END) - staggerSpan);
+  const end = start + staggerSpan;
+
+  // Compressed stack: every tile piles up near center, fanned 3-20° outward
+  // per index and scaled to 0.82 so it reads as a physical clustered deck.
+  const fanDeg = 3 + (index % 5) * 4.25;
+  const stackTop = 50 - final.height / 2 + (index % 3) * 1.4;
+  const stackLeft = 50 - final.width / 2 + ((index * 11) % 9) - 4;
+  const stackRotate = (index % 2 === 0 ? 1 : -1) * fanDeg;
+
+  const top = useTransform(progress, [0, start, end], [stackTop, stackTop, final.top], { clamp: true });
+  const left = useTransform(progress, [0, start, end], [stackLeft, stackLeft, final.left], { clamp: true });
+  const rotate = useTransform(progress, [0, start, end], [stackRotate, stackRotate, 0], { clamp: true });
+  const scale = useTransform(progress, [0, start, end], [0.82, 0.82, 1], { clamp: true });
+
+  const topPct = useTransform(top, (v) => `${v}%`);
+  const leftPct = useTransform(left, (v) => `${v}%`);
+
+  return (
+    <motion.div
+      className="absolute overflow-hidden rounded-2xl shadow-2xl"
+      style={{
+        top: topPct,
+        left: leftPct,
+        width: `${final.width}%`,
+        height: `${final.height}%`,
+        rotate,
+        scale,
+        zIndex: total - index,
+      }}
+    >
+      <img src={src} alt={alt} className="h-full w-full object-cover" />
+    </motion.div>
+  );
+}
+
+export function StackToSpread({
+  items,
+  layout,
+  scrollVh = 220,
+  className,
+  title,
+  subtitle,
+  cta,
+}: {
+  items: { src: string; alt: string }[];
+  layout?: SpreadLayoutItem[];
+  scrollVh?: number;
+  className?: string;
+  title?: ReactNode;
+  subtitle?: ReactNode;
+  cta?: ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const isDesktop = useIsDesktop();
+  const finalLayout = layout ?? buildCrossLayout(items.length, isDesktop);
+  // The headline fades/scales in from 30% scroll, during the scatter phase,
+  // and stays centered on the page's core message while tiles move around it.
+  const titleOpacity = useTransform(scrollYProgress, [0.3, 0.55], [0, 1], { clamp: true });
+  const titleScale = useTransform(scrollYProgress, [0.3, 0.55], [0.92, 1], { clamp: true });
+
+  return (
+    <div ref={ref} className="relative" style={{ height: `${scrollVh}svh` }}>
+      <div className={`sticky top-0 h-svh w-full overflow-hidden ${className ?? ""}`}>
+        {(title || subtitle || cta) && (
+          <motion.div
+            // Above every tile (max z-index is `total`) so once it fades in it
+            // actually reads instead of sitting clipped behind the artwork.
+            // The -50% Y centering has to live in this same `style` object,
+            // not a Tailwind `-translate-y-1/2` class — Motion writes its own
+            // inline `transform` for `scale`, which silently wins over (and
+            // wipes out) any transform set by a class on the same element.
+            className="pointer-events-none absolute inset-x-0 top-1/2 z-50 px-5 text-center"
+            style={{ opacity: titleOpacity, scale: titleScale, y: "-50%" }}
+          >
+            {title && (
+              <h2 className="font-display text-3xl font-bold uppercase leading-[0.95] text-foreground drop-shadow-[0_2px_24px_rgba(0,0,0,0.15)] lg:text-6xl">
+                {title}
+              </h2>
+            )}
+            {subtitle && (
+              <p className="mx-auto mt-4 max-w-md text-base text-muted-foreground lg:text-lg">
+                {subtitle}
+              </p>
+            )}
+            {cta && <div className="pointer-events-auto mt-6 flex justify-center">{cta}</div>}
+          </motion.div>
+        )}
+        {items.map((item, i) => (
+          <SpreadTile
+            key={item.src}
+            progress={scrollYProgress}
+            index={i}
+            total={items.length}
+            final={finalLayout[i]!}
+            src={item.src}
+            alt={item.alt}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Floating circle link — a round photo CTA that bobs gently in place with a
+// slowly rotating label ring around it, for "next/related" navigation
+// moments that deserve more presence than a plain button.
+export function FloatingCircleLink({
+  href,
+  image,
+  alt,
+  label = "Voir le projet",
+  size = 300,
+  className,
+}: {
+  href: string;
+  image: string;
+  alt: string;
+  label?: string;
+  size?: number;
+  className?: string;
+}) {
+  const ringText = `${label.toUpperCase()} • ${label.toUpperCase()} • `;
+  return (
+    <motion.a
+      href={href}
+      aria-label={label}
+      className={`group relative inline-flex shrink-0 items-center justify-center rounded-full ${className ?? ""}`}
+      style={{ width: size, height: size }}
+      animate={{ y: [0, -16, 0] }}
+      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.97 }}
+    >
+      <motion.svg
+        viewBox="0 0 200 200"
+        className="pointer-events-none absolute -inset-[15%] text-primary"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
+      >
+        <defs>
+          <path id="floatingCirclePath" d="M 100,100 m -85,0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0" />
+        </defs>
+        <text fill="currentColor" fontSize="10.5" fontWeight="700" letterSpacing="2.5">
+          <textPath href="#floatingCirclePath" startOffset="0%">
+            {ringText}
+          </textPath>
+        </text>
+      </motion.svg>
+      <span className="relative h-full w-full overflow-hidden rounded-full border-4 border-background shadow-2xl">
+        <img
+          src={image}
+          alt={alt}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+      </span>
+      <span className="absolute inset-0 flex items-center justify-center rounded-full bg-foreground/0 transition-colors duration-300 group-hover:bg-foreground/25">
+        <ArrowUpRight className="h-8 w-8 scale-0 text-background opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" />
+      </span>
+    </motion.a>
   );
 }
 
