@@ -33,6 +33,8 @@ export type FlipCardItem = {
   series: string;
   title: string;
   description: string;
+  /** optional chips under the description */
+  tags?: string[];
 };
 
 export function FlipCardStack({
@@ -87,14 +89,17 @@ export function FlipCardStack({
   return (
     <div
       ref={root}
-      className={`grid items-center gap-10 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14 ${className ?? ""}`}
+      // Fixed-width deck column so spreading the pile doesn't shove the copy
+      // sideways; `auto` would resize as the deck changes shape.
+      className={`grid items-center gap-10 lg:grid-cols-[120px_minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-12 ${className ?? ""}`}
     >
       {/* deck — a column beside the copy on desktop, a row above it on mobile */}
       <div
         className={`relative order-2 lg:order-1 ${
           spread
-            ? "flex flex-row flex-wrap lg:flex-col"
-            : "h-[86px] w-full lg:h-[300px] lg:w-[104px]"
+            ? "flex flex-row flex-wrap justify-center lg:flex-col lg:justify-start"
+            : // sized to the pile itself: card + the offset of the last card
+              "mx-auto h-[101px] w-[99px] lg:mx-0 lg:h-[119px] lg:w-[115px]"
         }`}
         style={spread ? { gap: `${gap}px` } : undefined}
       >
@@ -153,6 +158,18 @@ export function FlipCardStack({
           {current?.category} / {current?.series} / {String(active + 1).padStart(2, "0")}
         </p>
         <p className="mt-5 max-w-md text-base leading-relaxed lg:text-lg">{current?.description}</p>
+        {current?.tags && current.tags.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {current.tags.map((t) => (
+              <span
+                key={t}
+                className="block border border-border bg-secondary px-4 py-2 text-xs font-semibold text-muted-foreground"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
         {!spread && (
           <button
             type="button"
@@ -164,8 +181,9 @@ export function FlipCardStack({
         )}
       </div>
 
-      {/* main frame */}
-      <div className="order-1 lg:order-3">
+      {/* main frame — capped, or the 4:5 box grows past the viewport on wide
+          screens (a ~600px column would render ~750px tall) */}
+      <div className="order-1 mx-auto w-full max-w-[340px] sm:max-w-[400px] lg:order-3 lg:mx-0 lg:max-w-[440px] lg:justify-self-end">
         <button
           type="button"
           onClick={toggle}

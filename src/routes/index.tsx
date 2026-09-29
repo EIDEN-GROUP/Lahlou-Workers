@@ -14,7 +14,6 @@ import {
   StaggerItem,
 } from "@/components/scroll-fx";
 import { StackedProjects } from "@/components/ui/stacked-projects";
-import { SplitCanvas } from "@/components/ui/split-canvas";
 import { FlipCardStack, type FlipCardItem } from "@/components/ui/flip-card-stack";
 import resultFacadeHero from "@/assets/results/result-facade-hero.webp";
 import resultAerial from "@/assets/results/result-aerial.webp";
@@ -127,6 +126,17 @@ const steps = [
     image: teamImage,
   },
 ];
+
+// Derived from `steps` so the method copy stays defined in one place.
+const methodCards: FlipCardItem[] = steps.map((s) => ({
+  src: s.image,
+  alt: s.title,
+  category: s.name,
+  series: "Méthode",
+  title: s.title,
+  description: s.text,
+  tags: s.points,
+}));
 
 const galleryCards: FlipCardItem[] = [
   {
@@ -438,32 +448,7 @@ function Index() {
           </FadeUp>
         </div>
         <div className="relative mt-16 lg:mt-20">
-          <SplitCanvas
-            sections={steps}
-            getImage={(s) => s.image}
-            getAlt={(s) => s.title}
-            renderContent={(s) => (
-              <div>
-                <span className="font-display text-3xl font-bold text-muted-foreground/40">
-                  {s.n}
-                </span>
-                <h3 className="mt-4 font-display text-2xl font-bold lg:text-4xl">{s.title}</h3>
-                <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-                  {s.text}
-                </p>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {s.points.map((p) => (
-                    <span
-                      key={p}
-                      className="block border border-border bg-secondary px-4 py-2 text-xs font-semibold text-muted-foreground"
-                    >
-                      {p}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          />
+          <FlipCardStack items={methodCards} />
         </div>
       </section>
 
