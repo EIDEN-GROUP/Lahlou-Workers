@@ -183,6 +183,13 @@ export function GsapFlipCard({
   const stackWidth = Math.min(215 * scale, stageWidth * 0.42);
   const stackHeight = stackWidth * 1.5;
 
+  // The original is a standalone full-page piece: its stage is `min-h-svh` and
+  // the cards sit at `top: 50%`, so nested inside a section that already has a
+  // heading it adds a whole extra viewport of height with the cards floating in
+  // the middle of it. Size the stage to the tallest thing it actually holds.
+  const railHeight = railCount > 0 ? railCount * tH + (railCount - 1) * gap : 0;
+  const stageHeight = stageWidth === 0 ? 720 : Math.max(hH, railHeight, stackHeight) + 64;
+
   const slotBox = useCallback(
     (slot: number) => {
       if (slot === 0) {
@@ -421,7 +428,7 @@ export function GsapFlipCard({
         className={`hxs-gsap-flip-card relative w-full overflow-hidden ${className}`}
         style={{ background: backgroundColor, color: textColor }}
       >
-        <div className="flex flex-col gap-[6vw] px-[5vw] py-[8vw]">
+        <div className="flex flex-col gap-[6vw] px-[5vw] py-[6vw]">
           {showCounter && (
             <div className="text-[3vw] tracking-[0.02em]">
               <span className="font-semibold">{String(heroSlotLabel).padStart(2, "0")}</span>
@@ -497,8 +504,8 @@ export function GsapFlipCard({
   return (
     <div
       ref={rootRef}
-      className={`hxs-gsap-flip-card relative min-h-svh w-full overflow-hidden ${className}`}
-      style={{ background: backgroundColor, color: textColor }}
+      className={`hxs-gsap-flip-card relative w-full overflow-hidden ${className}`}
+      style={{ background: backgroundColor, color: textColor, height: stageHeight }}
     >
       {showCounter && (
         <div
@@ -514,7 +521,7 @@ export function GsapFlipCard({
         onClick={(e) => {
           if (e.target === e.currentTarget) close();
         }}
-        className={`relative min-h-svh w-full ${opened ? "cursor-pointer" : "cursor-default"}`}
+        className={`relative h-full w-full ${opened ? "cursor-pointer" : "cursor-default"}`}
       >
         <div
           className={`pointer-events-none absolute top-1/2 z-30 max-w-[22.22vw] -translate-y-1/2 ${
