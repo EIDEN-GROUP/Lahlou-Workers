@@ -73,8 +73,12 @@ export function FlipCardStack({
     Flip.from(pending.current, {
       duration: reduce ? 0 : duration,
       ease: "power3.inOut",
-      absolute: true,
-      nested: true,
+      // No `absolute: true` here. It pulls the frames out of flow for the
+      // duration of the tween, which collapses the deck and the main frame's
+      // wrapper, shrinks the page, and makes the browser yank the scroll
+      // position — then hand it back when the tween ends. Reads as the page
+      // jumping up and down on every click. The layout is already in its
+      // final state by the time this runs, so the tween only needs transforms.
       // The deck peels open card by card rather than every frame moving at
       // once, which is most of what makes the fan read as deliberate.
       stagger: reduce ? 0 : 0.05,
@@ -90,12 +94,24 @@ export function FlipCardStack({
     setSpread((s) => !s);
   };
 
+  // Clicking a frame focuses it, and the browser then scrolls the focused
+  // element into view — which, with the site's global `scroll-behavior:
+  // smooth`, plays as a visible slide. Suppress the focus-on-click and
+  // restore it without the scroll; keyboard focus is untouched.
+  const holdScroll = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.currentTarget.focus({ preventScroll: true });
+  };
+
   return (
     <div
       ref={root}
       // Fixed-width deck column so spreading the pile doesn't shove the copy
       // sideways; `auto` would resize as the deck changes shape.
       className={`grid items-center gap-10 lg:grid-cols-[120px_minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-12 ${className ?? ""}`}
+      // Scroll anchoring: the browser compensates when content resizes, and
+      // that compensation is itself a scroll animation here. Opt out.
+      style={{ overflowAnchor: "none" }}
     >
       {/* deck — a column beside the copy on desktop, a row above it on mobile */}
       <div
@@ -111,6 +127,7 @@ export function FlipCardStack({
           <button
             key={item.src}
             type="button"
+            onMouseDown={holdScroll}
             onClick={() => {
               capture();
               if (spread) setActive(i);
@@ -151,8 +168,10 @@ export function FlipCardStack({
         ))}
       </div>
 
-      {/* copy */}
-      <div className="relative order-3 lg:order-2">
+      {/* copy — min-height reserved because the descriptions differ in length,
+          and without it the column resizes on every pick, reflowing the
+          section and dragging the scroll position with it */}
+      <div className="relative order-3 lg:order-2 lg:min-h-[21rem]">
         {/* oversized index sitting behind the title, same ghosted-number
             treatment the stacked project cards use */}
         <span
@@ -215,6 +234,7 @@ export function FlipCardStack({
         {!spread && (
           <button
             type="button"
+            onMouseDown={holdScroll}
             onClick={toggle}
             className="group/cta mt-8 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary"
           >
@@ -229,6 +249,7 @@ export function FlipCardStack({
       <div className="order-1 mx-auto w-full max-w-[340px] sm:max-w-[400px] lg:order-3 lg:mx-0 lg:max-w-[440px] lg:justify-self-end">
         <button
           type="button"
+          onMouseDown={holdScroll}
           onClick={toggle}
           aria-expanded={spread}
           aria-label={spread ? "Replier la pile de photos" : "Déplier la pile de photos"}
