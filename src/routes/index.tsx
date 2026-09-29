@@ -399,15 +399,19 @@ function Index() {
             <div className="flex justify-center">
               <Eyebrow label="Fonctionnalités clés" />
             </div>
+            <h2 className="mt-6 font-display text-[32px] font-bold lg:text-[56px]">
+              Cinq étapes. Pas de détour.
+            </h2>
             <div className="mt-6 flex justify-center">
               <SplitButton href="/devis">Demander un devis</SplitButton>
             </div>
           </FadeUp>
         </div>
         <div className="relative mt-10 lg:mt-14">
+          {/* No `title` here: the section already has its <h2> above, and the
+              component would render a second one beside the rail. */}
           <GsapFlipCard
             items={methodCards}
-            title="Cinq étapes. Pas de détour."
             meta="Méthode / Lahlou Workers"
             description="Du premier échange à la remise des clés, chaque étape est cadrée, chiffrée et suivie par un interlocuteur unique."
           />
