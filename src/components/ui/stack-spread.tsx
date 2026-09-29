@@ -99,34 +99,84 @@ const PARALLAX_SPRING = { stiffness: 90, damping: 22, mass: 0.6 };
 const parallaxDepth = (i: number, total: number) =>
   total <= 1 ? 1 : 0.55 + (i / (total - 1)) * 0.75;
 
+/**
+ * Small-screen grid geometry, in vw/vh.
+ * `band` is the clear horizontal strip kept free through the middle of the
+ * viewport for the headline + subtitle + CTA — the cards are laid out above
+ * and below it, never inside it.
+ */
+type SmallGrid = { colX: number; cardH: number; rowGap: number; band: number };
+
 const RESPONSIVE = {
   desktop: {
     scale: null as number | null,
     small: false,
-    colX: null as number | null,
     card: null as { w: number; h: number } | null,
+    grid: null as SmallGrid | null,
   },
-  small: {
-    scale: 0.72,
+  tablet: {
+    scale: 1,
     small: true,
-    colX: 22,
-    card: { w: 40, h: 20 },
+    card: { w: 30, h: 15 },
+    grid: { colX: 17, cardH: 15, rowGap: 2, band: 30 },
+  },
+  phone: {
+    scale: 1,
+    small: true,
+    card: { w: 40, h: 14 },
+    grid: { colX: 22, cardH: 14, rowGap: 2, band: 34 },
   },
 };
 
 function useResponsive() {
   const [r, setR] = useState(RESPONSIVE.desktop);
   useEffect(() => {
-    // Touch vs. mouse, not raw width: a narrow but mouse-driven frame keeps
-    // the desktop scatter + pointer parallax; only real touch devices drop to
-    // the stacked column layout.
-    const mq = window.matchMedia("(pointer: coarse)");
-    const read = () => setR(mq.matches ? RESPONSIVE.small : RESPONSIVE.desktop);
+    // Touch devices always get the stacked column layout, but so does any
+    // viewport too narrow for the desktop scatter to fit — a 600px-wide
+    // desktop window has the same collision problem a phone does.
+    const phone = window.matchMedia("(max-width: 767px)");
+    const tablet = window.matchMedia("(max-width: 1024px)");
+    const coarse = window.matchMedia("(pointer: coarse)");
+    const read = () => {
+      if (phone.matches) setR(RESPONSIVE.phone);
+      else if (tablet.matches || coarse.matches) setR(RESPONSIVE.tablet);
+      else setR(RESPONSIVE.desktop);
+    };
     read();
-    mq.addEventListener("change", read);
-    return () => mq.removeEventListener("change", read);
+    const list = [phone, tablet, coarse];
+    list.forEach((m) => m.addEventListener("change", read));
+    return () => list.forEach((m) => m.removeEventListener("change", read));
   }, []);
   return r;
+}
+
+/**
+ * Resting positions for the small-screen layout: a real 2-column grid derived
+ * from card order, with `band` vh kept clear through the middle.
+ *
+ * The cards' own `targetSm` values can't express this — their inner rows sit
+ * ~19vh from centre, so with any reasonable card height the headline and CTA
+ * end up overlapping the photos. Computing the grid here fixes it for every
+ * caller at once, whatever `targetSm` they pass.
+ */
+function smallGridPositions(total: number, g: SmallGrid) {
+  const rows = Math.ceil(total / 2);
+  const above = Math.floor(rows / 2);
+  const rowY = Array.from({ length: rows }, (_, r) => {
+    const isAbove = r < above;
+    const dist = isAbove ? above - 1 - r : r - above;
+    const offset = g.band / 2 + g.cardH / 2 + dist * (g.cardH + g.rowGap);
+    return isAbove ? -offset : offset;
+  });
+
+  return Array.from({ length: total }, (_, i) => {
+    // An odd last card has no partner — centre it instead of leaving a hole.
+    const alone = i === total - 1 && total % 2 === 1;
+    return {
+      x: alone ? 0 : i % 2 === 0 ? g.colX : -g.colX,
+      y: rowY[Math.floor(i / 2)] ?? 0,
+    };
+  });
 }
 
 function usePointerParallax(active: boolean, enabled: boolean) {
@@ -198,8 +248,7 @@ function Card({
   reduce,
   clusterRotation,
   scaleMul,
-  isSmall,
-  colX,
+  smallPos,
   fixedCard,
   stackScale,
   cardRadius,
@@ -212,8 +261,8 @@ function Card({
   clusterRotation: boolean;
   /** uniform rest-scale for every card; null = use each card's own scale */
   scaleMul: number | null;
-  isSmall: boolean;
-  colX: number | null;
+  /** resting spot on the small-screen grid; null = desktop scatter */
+  smallPos: { x: number; y: number } | null;
   fixedCard: { w: number; h: number } | null;
   /** scale of the cards while clustered, before the scatter */
   stackScale: number;
@@ -230,10 +279,9 @@ function Card({
   const restScale = scaleMul ?? target.scale ?? 1;
 
   // final resting spot: column grid on small screens, scatter on desktop
-  const sm = isSmall && card.targetSm ? card.targetSm : null;
-  const endX = sm ? (colX != null ? Math.sign(sm.x) * colX : sm.x) : target.x;
-  const endY = sm ? sm.y : target.y;
-  const endRotate = flat || isSmall ? 0 : target.rotate;
+  const endX = smallPos ? smallPos.x : target.x;
+  const endY = smallPos ? smallPos.y : target.y;
+  const endRotate = flat || smallPos ? 0 : target.rotate;
 
   // -50% keeps card centred on its anchor
   const translate = useTransform([progress, pointer.x, pointer.y], (values: number[]) => {
@@ -325,7 +373,8 @@ function StackSpreadStage({
 }: StackSpreadStageProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const { scale: scaleMul, small: isSmall, colX, card: fixedCard } = useResponsive();
+  const { scale: scaleMul, small: isSmall, card: fixedCard, grid } = useResponsive();
+  const smallPositions = isSmall && grid ? smallGridPositions(cards.length, grid) : null;
 
   const { scrollYProgress } = useScroll({
     target: wrapRef,
@@ -357,7 +406,7 @@ function StackSpreadStage({
       className={cn("relative w-full", className)}
       style={{ height: `${scrollLength}vh`, backgroundColor: bgColor }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div className="sticky top-0 h-svh w-full overflow-hidden">
         {/* centre text — above the cards so the CTA stays clickable */}
         <motion.div
           className="pointer-events-none absolute inset-0 z-[15] flex flex-col items-center justify-center px-6 text-center max-md:px-8"
@@ -367,18 +416,20 @@ function StackSpreadStage({
           }}
         >
           <h2
-            className="w-full whitespace-pre-line font-display text-[4.5vw] font-bold uppercase leading-[0.95] tracking-tight max-md:text-[10vw]"
+            className="w-full whitespace-pre-line font-display text-[4.5vw] font-bold uppercase leading-[0.95] tracking-tight max-md:text-[8.5vw] md:max-lg:text-[5.5vw]"
             style={{ color: textColor }}
           >
             {title}
           </h2>
           <p
-            className="mt-[1.2vw] w-full max-w-[42ch] text-[1.15vw] leading-relaxed tracking-tight max-md:mt-3 max-md:text-[3.6vw]"
+            className="mt-[1.2vw] w-full max-w-[42ch] text-[1.15vw] leading-relaxed tracking-tight max-md:mt-3 max-md:text-[3.4vw] md:max-lg:mt-2 md:max-lg:text-[1.9vw]"
             style={{ color: textColor, opacity: 0.6 }}
           >
             {subtitle}
           </p>
-          {cta && <div className="pointer-events-auto mt-8 flex justify-center">{cta}</div>}
+          {cta && (
+            <div className="pointer-events-auto mt-8 flex justify-center max-md:mt-5">{cta}</div>
+          )}
         </motion.div>
 
         {/* scattering cards */}
@@ -391,8 +442,7 @@ function StackSpreadStage({
               reduce={reduce}
               clusterRotation={clusterRotation}
               scaleMul={scaleMul}
-              isSmall={isSmall}
-              colX={colX}
+              smallPos={smallPositions?.[i] ?? null}
               fixedCard={fixedCard}
               stackScale={stackScale}
               cardRadius={cardRadius}
@@ -405,7 +455,7 @@ function StackSpreadStage({
         {/* scroll hint */}
         {showScrollHint && (
           <motion.div
-            className="pointer-events-none absolute inset-x-0 bottom-[3vh] z-20 flex flex-col items-center gap-[0.6vh] text-[0.8vw] font-medium uppercase tracking-[0.2em] max-md:bottom-6 max-md:gap-1 max-md:text-[2.8vw]"
+            className="pointer-events-none absolute inset-x-0 bottom-[3vh] z-20 flex flex-col items-center gap-[0.6vh] text-[0.8vw] font-medium uppercase tracking-[0.2em] max-md:bottom-6 max-md:gap-1 max-md:text-[2.8vw] md:max-lg:text-[1.3vw]"
             style={{ color: textColor, opacity: hintOpacity }}
           >
             <span>Défiler</span>
