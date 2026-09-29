@@ -111,9 +111,13 @@ export function HorizontalTimeline<T>({
   const x = useTransform(scrollYProgress, [0, 1], ["0vw", `-${travel}vw`], { clamp: true });
   const lineScale = useTransform(scrollYProgress, [0, 0.98], [0, 1], { clamp: true });
 
+  // `ref` stays on the outer element in both layouts. Returning early from a
+  // branch that never attached it left `useScroll` measuring a null target —
+  // and since `useIsDesktop` is false on the first client render, that was
+  // every load, so the track never moved.
   if (!isDesktop) {
     return (
-      <div className={`relative mx-auto max-w-[1440px] px-5 ${className ?? ""}`}>
+      <div ref={ref} className={`relative mx-auto max-w-[1440px] px-5 ${className ?? ""}`}>
         <div className="absolute bottom-0 left-[22px] top-0 w-px bg-border" />
         <ol className="relative space-y-12 py-4">
           {items.map((item, i) => (
@@ -135,7 +139,7 @@ export function HorizontalTimeline<T>({
     <div
       ref={ref}
       className={`relative ${className ?? ""}`}
-      style={{ height: `${100 + (reduce ? 0 : travel)}vh` }}
+      style={{ height: `${100 + (reduce ? 0 : travel)}svh` }}
     >
       <div className="sticky top-0 flex h-svh items-center overflow-hidden">
         <motion.div
