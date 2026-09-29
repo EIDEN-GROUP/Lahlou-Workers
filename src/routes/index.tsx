@@ -125,6 +125,22 @@ const steps = [
     points: ["Mobilisation coordonnée", "Suivi régulier", "Travail tenu jusqu’au bout"],
     image: teamImage,
   },
+  {
+    n: "04",
+    name: "Suivi",
+    title: "On garde le contrôle.",
+    text: "Un chef d’équipe sur place et un point d’avancement régulier : vous savez où en est le chantier, sans avoir à courir après l’information.",
+    points: ["Chef d’équipe dédié", "Point d’avancement", "Ajustement des effectifs"],
+    image: serviceGrosOeuvre,
+  },
+  {
+    n: "05",
+    name: "Livraison",
+    title: "On livre et on clôture.",
+    text: "Vérification des finitions, reprise des réserves éventuelles et remise du chantier propre, dans les délais annoncés au départ.",
+    points: ["Contrôle des finitions", "Reprise des réserves", "Chantier livré propre"],
+    image: projectImage,
+  },
 ];
 
 // Derived from `steps` so the method copy stays defined in one place.
@@ -440,7 +456,7 @@ function Index() {
               <Eyebrow label="Fonctionnalités clés" />
             </div>
             <h2 className="mt-6 font-display text-[32px] font-bold lg:text-[56px]">
-              Trois étapes. Pas de détour.
+              Cinq étapes. Pas de détour.
             </h2>
             <div className="mt-6 flex justify-center">
               <SplitButton href="/devis">Demander un devis</SplitButton>
