@@ -14,7 +14,7 @@ import {
   StaggerItem,
 } from "@/components/scroll-fx";
 import { StackedProjects } from "@/components/ui/stacked-projects";
-import { FlipCardStack, type FlipCardItem } from "@/components/ui/flip-card-stack";
+import { GsapFlipCard, type GsapFlipCardItem } from "@/components/ui/gsap-flip-card";
 import heroImage from "@/assets/lahlou-hero.webp";
 import craftImage from "@/assets/lahlou-craft.webp";
 import projectImage from "@/assets/lahlou-project.webp";
@@ -139,14 +139,11 @@ const steps = [
 ];
 
 // Derived from `steps` so the method copy stays defined in one place.
-const methodCards: FlipCardItem[] = steps.map((s) => ({
-  src: s.image,
-  alt: s.title,
-  category: s.name,
-  series: "Méthode",
-  title: s.title,
-  description: s.text,
-  tags: s.points,
+const methodCards: GsapFlipCardItem[] = steps.map((s) => ({
+  id: s.n,
+  image: s.image,
+  alt: `${s.name} — ${s.title}`,
+  caption: `${s.title} ${s.text}`,
 }));
 
 // Hoisted to module scope on purpose: the homepage re-renders on every FAQ
@@ -402,16 +399,18 @@ function Index() {
             <div className="flex justify-center">
               <Eyebrow label="Fonctionnalités clés" />
             </div>
-            <h2 className="mt-6 font-display text-[32px] font-bold lg:text-[56px]">
-              Cinq étapes. Pas de détour.
-            </h2>
             <div className="mt-6 flex justify-center">
               <SplitButton href="/devis">Demander un devis</SplitButton>
             </div>
           </FadeUp>
         </div>
-        <div className="relative mt-16 lg:mt-20">
-          <FlipCardStack items={methodCards} />
+        <div className="relative mt-10 lg:mt-14">
+          <GsapFlipCard
+            items={methodCards}
+            title="Cinq étapes. Pas de détour."
+            meta="Méthode / Lahlou Workers"
+            description="Du premier échange à la remise des clés, chaque étape est cadrée, chiffrée et suivie par un interlocuteur unique."
+          />
         </div>
       </section>
 
