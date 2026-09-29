@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { SplitButton } from "@/components/ui/split-button";
 import { FadeUp, FloatingCircleLink } from "@/components/scroll-fx";
-import { HorizontalTimeline } from "@/components/ui/horizontal-timeline";
+import { VaultTimeline } from "@/components/ui/vault-timeline";
 import StackSpread, { type StackSpreadCard } from "@/components/ui/stack-spread";
 import { ProjectTimeline } from "@/components/project-timeline";
 import { PROJECT_STEPS } from "@/lib/project-steps";
@@ -270,16 +270,17 @@ function ProjectDetail() {
       </section>
 
       {slug === "residences-missimi" ? (
-        <HorizontalTimeline
-          items={steps}
-          className="pb-16 lg:pb-24"
-          getLabel={(_step, i) => String(i + 1).padStart(2, "0")}
-          renderContent={(step) => (
-            <div>
-              <h3 className="font-display text-lg font-bold lg:text-xl">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
-            </div>
-          )}
+        <VaultTimeline
+          items={steps.map((s, i) => ({
+            id: `etape-${i + 1}`,
+            label: s.title,
+            content: s.text,
+            image: s.image,
+          }))}
+          title="Étapes du chantier"
+          periodLabel={`${project.city} · ${project.year}`}
+          imageUrl={project.hero}
+          imageAlt={project.name}
         />
       ) : (
         <ProjectTimeline steps={PROJECT_STEPS[slug] ?? []} />
