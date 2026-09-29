@@ -15,6 +15,12 @@ import {
 } from "@/components/scroll-fx";
 import { StackedProjects } from "@/components/ui/stacked-projects";
 import { SplitCanvas } from "@/components/ui/split-canvas";
+import { FlipCardStack, type FlipCardItem } from "@/components/ui/flip-card-stack";
+import resultFacadeHero from "@/assets/results/result-facade-hero.webp";
+import resultAerial from "@/assets/results/result-aerial.webp";
+import resultVillaPool from "@/assets/results/result-villa-pool.webp";
+import resultRooftop from "@/assets/results/result-rooftop.webp";
+import resultInterior from "@/assets/results/result-interior.webp";
 import heroImage from "@/assets/lahlou-hero.webp";
 import craftImage from "@/assets/lahlou-craft.webp";
 import projectImage from "@/assets/lahlou-project.webp";
@@ -119,6 +125,39 @@ const steps = [
     text: "Nos ouvriers arrivent préparés, encadrés et prêts à avancer avec vos responsables.",
     points: ["Mobilisation coordonnée", "Suivi régulier", "Travail tenu jusqu’au bout"],
     image: teamImage,
+  },
+];
+
+const galleryCards: FlipCardItem[] = [
+  {
+    src: resultFacadeHero,
+    alt: "Façade d’une résidence livrée à Agadir, lumière du soir",
+    category: "Résidentiel",
+    title: "Résidences MISSIMI",
+  },
+  {
+    src: resultAerial,
+    alt: "Vue aérienne d’un ensemble résidentiel livré",
+    category: "Résidentiel",
+    title: "Immeuble R+5, post-tension",
+  },
+  {
+    src: resultVillaPool,
+    alt: "Villa avec piscine livrée à Agadir",
+    category: "Résidentiel",
+    title: "Villas avec piscines",
+  },
+  {
+    src: resultRooftop,
+    alt: "Terrasse en toiture avec vue sur la ville",
+    category: "Finitions",
+    title: "Terrasses et toitures",
+  },
+  {
+    src: resultInterior,
+    alt: "Intérieur d’un appartement livré, prêt à emménager",
+    category: "Second œuvre",
+    title: "Appartements livrés",
   },
 ];
 
@@ -464,6 +503,27 @@ function Index() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section id="galerie" className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-28">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center lg:gap-20">
+          <FadeUp>
+            <Eyebrow label="Galerie" />
+            <h2 className="mt-6 font-display text-[32px] font-bold leading-[1.05] lg:text-[52px]">
+              Ce que ça donne, <span className="text-primary">livré</span>.
+            </h2>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg">
+              Des chantiers terminés, réceptionnés et remis aux clients. Dépliez la pile et
+              regardez de plus près.
+            </p>
+            <div className="mt-8">
+              <SplitButton href="/realisations">Voir tous les chantiers</SplitButton>
+            </div>
+          </FadeUp>
+          <FadeUp delay={0.1}>
+            <FlipCardStack items={galleryCards} />
+          </FadeUp>
         </div>
       </section>
 
