@@ -84,6 +84,13 @@ export const projectSchema = z.object({
 
 export const idInput = z.object({ id: idSchema });
 export const loginSchema = z.object({ password: z.string().min(1).max(200) });
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(10).max(128),
+  password: z.string().min(10).max(200),
+});
+export const visitSchema = z.object({
+  path: z.string().trim().min(1).max(200).regex(/^\//, "Chemin invalide"),
+});
 
 export type ContactInput = z.infer<typeof contactSchema>;
 export type DevisInput = z.infer<typeof devisSchema>;

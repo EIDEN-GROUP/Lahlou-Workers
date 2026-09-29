@@ -53,7 +53,13 @@ function rows(pairs: [string, string][]): string {
     .join("");
 }
 
-function brandedHtml(eyebrow: string, title: string, pairs: [string, string][]): string {
+function brandedHtml(
+  eyebrow: string,
+  title: string,
+  pairs: [string, string][],
+  cta?: { label: string; href: string },
+  intro?: string,
+): string {
   return (
     `<!doctype html><html lang="fr"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1"></head>` +
@@ -71,6 +77,12 @@ function brandedHtml(eyebrow: string, title: string, pairs: [string, string][]):
     `<tr><td style="background-color:#F9F9F9;padding:32px;border-left:1px solid #D4D4D4;border-right:1px solid #D4D4D4;border-bottom:1px solid #D4D4D4;">` +
     `<div style="font-family:${SANS};font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A8A8A;"><span style="display:inline-block;width:8px;height:8px;background-color:#BF1014;margin-right:8px;"></span>${escapeHtml(eyebrow)}</div>` +
     `<h1 style="margin:14px 0 0;font-family:${DISPLAY};font-size:28px;font-weight:900;line-height:1.05;text-transform:uppercase;color:#0A0A0A;">${escapeHtml(title)}</h1>` +
+    (intro
+      ? `<p style="margin:14px 0 0;font-family:${SANS};font-size:15px;line-height:1.6;color:#0A0A0A;">${escapeHtml(intro)}</p>`
+      : "") +
+    (cta
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td style="background-color:#BF1014;"><a href="${escapeHtml(cta.href)}" style="display:inline-block;padding:14px 28px;font-family:${SANS};font-size:14px;font-weight:700;color:#F9F9F9;text-decoration:none;">${escapeHtml(cta.label)}</a></td></tr></table>`
+      : "") +
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;border-top:1px solid #0A0A0A;">${rows(pairs)}</table>` +
     `</td></tr>` +
     // Footer
@@ -103,5 +115,37 @@ export async function notifyAdmin(
     });
   } catch (e) {
     console.error("[mailer] failed", e);
+  }
+}
+
+// One-time password-reset email to the admin address. Returns whether the
+// mail was actually handed to SMTP (false when SMTP isn't configured).
+export async function sendPasswordResetEmail(link: string): Promise<boolean> {
+  try {
+    const t = getTransporter();
+    const to = process.env["MAIL_TO"] ?? process.env["SMTP_USER"];
+    const from = process.env["MAIL_FROM"] ?? process.env["SMTP_USER"];
+    if (!t || !to || !from) return false;
+    await t.sendMail({
+      from,
+      to,
+      subject: "[Lahlou Workers] Réinitialisation du mot de passe",
+      text:
+        `${SITE.name} - Sécurité\nRéinitialisation du mot de passe\n\n` +
+        `Quelqu'un a demandé la réinitialisation du mot de passe admin. ` +
+        `Si c'était vous, ouvrez ce lien (valable 1 heure, utilisable une seule fois) :\n${link}\n\n` +
+        `Si ce n'était pas vous, ignorez cet email — le mot de passe reste inchangé.`,
+      html: brandedHtml(
+        "Sécurité",
+        "Réinitialiser le mot de passe.",
+        [["Validité", "1 heure, usage unique"]],
+        { label: "Réinitialiser le mot de passe", href: link },
+        "Quelqu'un a demandé la réinitialisation du mot de passe admin. Si c'était vous, utilisez le bouton ci-dessous. Sinon, ignorez cet email : rien ne changera.",
+      ),
+    });
+    return true;
+  } catch (e) {
+    console.error("[mailer] failed", e);
+    return false;
   }
 }

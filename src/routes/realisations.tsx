@@ -38,16 +38,17 @@ const filters = ["Tous", "Résidentiel", "Commercial", "Industriel", "Rénovatio
 
 const projects = [
   {
+    slug: "residences-missimi",
     name: "Résidences MISSIMI",
     city: "Agadir",
     year: "2025",
     type: "Résidentiel",
     image: projectImage,
     ratio: "aspect-[4/5]",
-    href: "/realisations/residences-missimi",
   },
   {
-    name: "Immeuble R+5 | post-tension",
+    slug: "immeuble-r-plus-5",
+    name: "Immeuble R+5 en post-tension",
     city: "Agadir",
     year: "2024",
     type: "Résidentiel",
@@ -55,7 +56,8 @@ const projects = [
     ratio: "aspect-[16/10]",
   },
   {
-    name: "Villa avec piscine",
+    slug: "villas-piscines",
+    name: "3 villas avec piscines",
     city: "Agadir",
     year: "2024",
     type: "Résidentiel",
@@ -63,7 +65,8 @@ const projects = [
     ratio: "aspect-square",
   },
   {
-    name: "Infrastructure cimenterie",
+    slug: "usine-ciment-tan-tan",
+    name: "Cimenterie de Tan-Tan",
     city: "Tan-Tan",
     year: "2024",
     type: "Industriel",
@@ -71,7 +74,8 @@ const projects = [
     ratio: "aspect-[4/5]",
   },
   {
-    name: "Rénovation siège administratif",
+    slug: "siege-administratif",
+    name: "Siège Lahlou Workers",
     city: "Agadir",
     year: "2023",
     type: "Rénovation",
@@ -79,7 +83,8 @@ const projects = [
     ratio: "aspect-[16/10]",
   },
   {
-    name: "Aménagement de bureaux",
+    slug: "bureaux-orosand",
+    name: "Bureaux OROSAND INVEST",
     city: "Agadir",
     year: "2023",
     type: "Commercial",
@@ -92,13 +97,9 @@ function Realisations() {
   const [active, setActive] = useState("Tous");
   // Admin-added projects (from /admin/projects) are merged in here so they get
   // the exact same StackedProjects motion as the historical ones — not a
-  // separate plain list.
-  // GSAP's pin setup mutates the DOM directly (wraps pinned nodes, inserts
-  // spacers) outside React's control. If `items` changes after that's already
-  // happened, React's next reconciliation pass crashes trying to diff against
-  // DOM it no longer recognizes. So StackedProjects only ever mounts once
-  // admin + static projects are already combined — never with a list that
-  // changes size after the fact.
+  // separate plain list. StackedProjects only ever mounts once admin + static
+  // projects are already combined — never with a list that changes size after
+  // the fact.
   const [adminProjects, setAdminProjects] = useState<
     { name: string; city: string; year: string; type: string; image: string }[] | null
   >(null);
@@ -168,7 +169,7 @@ function Realisations() {
               title: p.name,
               description: `${p.city} · ${p.year}`,
               image: p.image,
-              ...("href" in p ? { href: p.href as string } : {}),
+              ...("slug" in p && p.slug ? { href: `/realisations/${p.slug}` } : {}),
             }))}
           />
         )}

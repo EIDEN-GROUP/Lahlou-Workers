@@ -3,7 +3,7 @@ import { AnimatePresence, motion, type Variants } from "motion/react";
 import { useCallback, useEffect, useRef, useState, type ReactNode, type Ref } from "react";
 import { SplitButton } from "@/components/ui/split-button";
 import { SITE, whatsappLink } from "@/lib/site";
-import footerWordmarkScaffold from "@/assets/decor/footer-wordmark-scaffold-dark.webp";
+import { VisitTracker } from "@/components/visit-tracker";
 
 export type HeaderVariant = "light" | "hero" | "dark";
 
@@ -366,14 +366,13 @@ export function SiteFooter() {
         </div>
         <div className="pt-3 text-xs text-muted-foreground/70">Développé par Eiden Group</div>
       </div>
-      <div className="relative flex h-[90px] items-center justify-center overflow-hidden border-t border-background/10 lg:h-[150px]">
-        <img
-          src={footerWordmarkScaffold}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="h-full w-auto max-w-none opacity-60"
-        />
+      <div
+        aria-hidden="true"
+        className="relative flex items-center justify-center overflow-hidden border-t border-background/10 py-6 lg:py-10"
+      >
+        <span className="font-technical w-full text-center text-[11vw] leading-[0.85] tracking-[0.02em] text-background/60 select-none">
+          LAHLOU WORKERS
+        </span>
       </div>
     </footer>
   );
@@ -413,6 +412,7 @@ export function PageShell({
 }) {
   return (
     <>
+      <VisitTracker />
       <SiteHeader variant={header} />
       <main id="contenu">{children}</main>
       <SiteFooter />

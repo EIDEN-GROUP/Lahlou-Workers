@@ -1,7 +1,8 @@
 // Single-admin session over HttpOnly signed cookie. No localStorage.
-// Password verified with bcrypt against ADMIN_PASSWORD_HASH (preferred) or
-// ADMIN_PASSWORD (dev fallback, compared timing-safe). Session cookie is
-// HMAC-signed with ADMIN_SESSION_SECRET.
+// Password verified with bcrypt against the DB hash first (set on first
+// password reset), then ADMIN_PASSWORD_HASH, then ADMIN_PASSWORD (dev
+// fallback, compared timing-safe). Session cookie is HMAC-signed with
+// ADMIN_SESSION_SECRET.
 
 import bcrypt from "bcryptjs";
 import { createHmac, timingSafeEqual } from "node:crypto";
@@ -13,7 +14,7 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 12; // 12h
 function secret(): string {
   const s = process.env["ADMIN_SESSION_SECRET"];
   if (!s || s.length < 32)
-    throw new Error("Missing ADMIN_SESSION_SECRET (>=32 chars) — see .env.example");
+    throw new Error("Missing ADMIN_SESSION_SECRET (>=32 chars) - see .env.example");
   return s;
 }
 
@@ -29,6 +30,14 @@ export function timingSafeCompare(a: string, b: string): boolean {
 }
 
 export async function verifyPassword(password: string): Promise<boolean> {
+  const dbHash = await getDbPasswordHash().catch(() => null);
+  if (dbHash) {
+    try {
+      return await bcrypt.compare(password, dbHash);
+    } catch {
+      return false;
+    }
+  }
   const hash = process.env["ADMIN_PASSWORD_HASH"];
   if (hash) {
     try {
@@ -38,8 +47,35 @@ export async function verifyPassword(password: string): Promise<boolean> {
     }
   }
   const plain = process.env["ADMIN_PASSWORD"];
-  if (!plain) throw new Error("Missing ADMIN_PASSWORD or ADMIN_PASSWORD_HASH — see .env.example");
+  if (!plain) throw new Error("Missing ADMIN_PASSWORD or ADMIN_PASSWORD_HASH - see .env.example");
   return timingSafeCompare(password, plain);
+}
+
+// DB-backed credential (written on password reset — env can't be rewritten
+// at runtime). Returns null when Supabase or the table isn't configured.
+export async function getDbPasswordHash(): Promise<string | null> {
+  try {
+    const { isSupabaseConfigured, getSupabaseAdmin } = await import("./supabase");
+    if (!isSupabaseConfigured()) return null;
+    const { data, error } = await getSupabaseAdmin()
+      .from("admin_settings")
+      .select("value")
+      .eq("key", "password_hash")
+      .maybeSingle();
+    if (error || !data) return null;
+    const value = (data as { value?: unknown }).value;
+    return typeof value === "string" && value.length > 20 ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function setDbPasswordHash(hash: string): Promise<void> {
+  const { getSupabaseAdmin } = await import("./supabase");
+  const { error } = await getSupabaseAdmin()
+    .from("admin_settings")
+    .upsert({ key: "password_hash", value: hash, updated_at: new Date().toISOString() });
+  if (error) throw new Error("Enregistrement impossible");
 }
 
 export function createSessionValue(): { value: string; expires: Date } {
@@ -73,9 +109,8 @@ export function isAdminRequest(): boolean {
     const cookie =
       headers instanceof Headers
         ? headers.get("cookie")
-        : ((headers as Record<string, string | string[] | undefined>)["cookie"] ??
-          null);
-    const cookieStr = Array.isArray(cookie) ? cookie[0] ?? null : cookie;
+        : ((headers as Record<string, string | string[] | undefined>)["cookie"] ?? null);
+    const cookieStr = Array.isArray(cookie) ? (cookie[0] ?? null) : cookie;
     return parseSessionCookie(cookieStr);
   } catch {
     return false;

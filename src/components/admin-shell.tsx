@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { LayoutDashboard, MessageSquare, FileText, Users, Building2, LogOut } from "lucide-react";
+import { LayoutDashboard, MessageSquare, FileText, Users, LogOut } from "lucide-react";
 import { adminMe, logout } from "@/lib/backend/functions";
 
 const navItems = [
@@ -8,7 +8,8 @@ const navItems = [
   { to: "/admin/contacts", label: "Contacts", icon: MessageSquare },
   { to: "/admin/devis", label: "Devis", icon: FileText },
   { to: "/admin/recrutement", label: "Recrutement", icon: Users },
-  { to: "/admin/projects", label: "Projets", icon: Building2 },
+  // Projets gérés côté frontend (pages /realisations/…) — l’onglet est masqué,
+  // la route /admin/projects reste fonctionnelle en arrière-plan.
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {

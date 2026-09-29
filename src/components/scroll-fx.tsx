@@ -1,10 +1,28 @@
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type MotionValue, type Variants } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useScroll,
+  useTransform,
+  type MotionValue,
+  type Variants,
+} from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export function FadeUp({ children, delay = 0, className, y = 28 }: { children: ReactNode; delay?: number; className?: string; y?: number }) {
+export function FadeUp({
+  children,
+  delay = 0,
+  className,
+  y = 28,
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  y?: number;
+}) {
   return (
     <motion.div
       className={className}
@@ -30,17 +48,35 @@ const staggerItem: Variants = {
 
 export function Stagger({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <motion.div className={className} variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-10% 0px -10% 0px" }}>
+    <motion.div
+      className={className}
+      variants={staggerContainer}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, margin: "-10% 0px -10% 0px" }}
+    >
       {children}
     </motion.div>
   );
 }
 
 export function StaggerItem({ children, className }: { children: ReactNode; className?: string }) {
-  return <motion.div className={className} variants={staggerItem}>{children}</motion.div>;
+  return (
+    <motion.div className={className} variants={staggerItem}>
+      {children}
+    </motion.div>
+  );
 }
 
-export function ScaleIn({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
+export function ScaleIn({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   return (
     <motion.div
       className={className}
@@ -69,14 +105,34 @@ export function LineReveal({ children, className }: { children: ReactNode; class
   );
 }
 
-export function ParallaxImage({ src, alt, className, imgClassName, strength = 60 }: { src: string; alt: string; className?: string; imgClassName?: string; strength?: number }) {
+export function ParallaxImage({
+  src,
+  alt,
+  className,
+  imgClassName,
+  strength = 60,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  imgClassName?: string;
+  strength?: number;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [-strength, strength]);
 
   return (
     <div ref={ref} className={`overflow-hidden ${className ?? ""}`}>
-      <motion.img src={src} alt={alt} loading="lazy" width={1600} height={1200} style={{ y }} className={`h-full w-full scale-110 object-cover ${imgClassName ?? ""}`} />
+      <motion.img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        width={1600}
+        height={1200}
+        style={{ y }}
+        className={`h-full w-full scale-110 object-cover ${imgClassName ?? ""}`}
+      />
     </div>
   );
 }
@@ -86,36 +142,76 @@ export function HeroParallax({ src, alt }: { src: string; alt: string }) {
   const y = useTransform(scrollY, [0, 800], [0, 160]);
   const scale = useTransform(scrollY, [0, 800], [1, 1.08]);
 
-  return <motion.img src={src} alt={alt} width={1920} height={1200} className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" style={{ y, scale }} />;
+  return (
+    <motion.img
+      src={src}
+      alt={alt}
+      width={1920}
+      height={1200}
+      className="absolute inset-0 h-full w-full object-cover"
+      fetchPriority="high"
+      style={{ y, scale }}
+    />
+  );
 }
 
 export function ScrollProgressBar() {
   const { scrollYProgress } = useScroll();
-  return <motion.div className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-primary" style={{ scaleX: scrollYProgress }} />;
+  return (
+    <motion.div
+      className="fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-primary"
+      style={{ scaleX: scrollYProgress }}
+    />
+  );
 }
 
 // "Transform scroll position to any value" — a number that counts up as its
 // own element crosses the viewport, driven directly by scroll progress (no timers).
-export function ScrollCounter({ to, className, prefix = "", suffix = "" }: { to: number; className?: string; prefix?: string; suffix?: string }) {
+export function ScrollCounter({
+  to,
+  className,
+  prefix = "",
+  suffix = "",
+}: {
+  to: number;
+  className?: string;
+  prefix?: string;
+  suffix?: string;
+}) {
   const ref = useRef<HTMLSpanElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.9", "start 0.35"] });
   const rounded = useTransform(scrollYProgress, [0, 1], [0, to], { clamp: true });
   const [value, setValue] = useState(0);
-  useMotionValueEvent(rounded, "change", v => setValue(Math.round(v)));
+  useMotionValueEvent(rounded, "change", (v) => setValue(Math.round(v)));
 
-  return <span ref={ref} className={className}>{prefix}{value}{suffix}</span>;
+  return (
+    <span ref={ref} className={className}>
+      {prefix}
+      {value}
+      {suffix}
+    </span>
+  );
 }
 
 // "Track element scroll position through viewport" — a rail that fills as the
 // wrapped section itself travels from just-entering to just-leaving the viewport.
-export function ScrollTrackedRail({ children, className }: { children: ReactNode; className?: string }) {
+export function ScrollTrackedRail({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
 
   return (
     <div ref={ref} className={`relative ${className ?? ""}`}>
       <div className="absolute inset-y-0 left-0 hidden w-px bg-current/15 lg:block" />
-      <motion.div className="absolute inset-y-0 left-0 hidden w-px origin-top bg-primary lg:block" style={{ scaleY: scrollYProgress }} />
+      <motion.div
+        className="absolute inset-y-0 left-0 hidden w-px origin-top bg-primary lg:block"
+        style={{ scaleY: scrollYProgress }}
+      />
       {children}
     </div>
   );
@@ -123,15 +219,41 @@ export function ScrollTrackedRail({ children, className }: { children: ReactNode
 
 // "Scroll image reveal effect" — the image wipes into view (clip-path) as it
 // scrolls through, rather than just fading.
-export function RevealImage({ src, alt, className, imgClassName }: { src: string; alt: string; className?: string; imgClassName?: string }) {
+export function RevealImage({
+  src,
+  alt,
+  className,
+  imgClassName,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  imgClassName?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.95", "start 0.35"] });
-  const clip = useTransform(scrollYProgress, [0, 1], ["inset(0% 0% 100% 0%)", "inset(0% 0% 0% 0%)"]);
+  const clip = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["inset(0% 0% 100% 0%)", "inset(0% 0% 0% 0%)"],
+  );
   const scale = useTransform(scrollYProgress, [0, 1], [1.15, 1]);
 
   return (
-    <motion.div ref={ref} className={`overflow-hidden ${className ?? ""}`} style={{ clipPath: clip }}>
-      <motion.img src={src} alt={alt} loading="lazy" width={1600} height={1200} style={{ scale }} className={`h-full w-full object-cover ${imgClassName ?? ""}`} />
+    <motion.div
+      ref={ref}
+      className={`overflow-hidden ${className ?? ""}`}
+      style={{ clipPath: clip }}
+    >
+      <motion.img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        width={1600}
+        height={1200}
+        style={{ scale }}
+        className={`h-full w-full object-cover ${imgClassName ?? ""}`}
+      />
     </motion.div>
   );
 }
@@ -142,7 +264,17 @@ export function RevealImage({ src, alt, className, imgClassName }: { src: string
 // footer) is expected to be its own `position: sticky` sibling — that's what
 // makes it slide up and physically cover this section as the user keeps
 // scrolling, rather than anything being crossfaded or layered in here.
-export function PinnedCircleReveal({ children, className, scrollVh = 240, stopAt = "26vmax" }: { children: ReactNode; className?: string; scrollVh?: number; stopAt?: string }) {
+export function PinnedCircleReveal({
+  children,
+  className,
+  scrollVh = 240,
+  stopAt = "26vmax",
+}: {
+  children: ReactNode;
+  className?: string;
+  scrollVh?: number;
+  stopAt?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   // No spring here — a spring lags behind fast/continuous scroll and then has
   // to "catch up" in a visible jump (exactly the bug this caused). Mapping
@@ -150,7 +282,7 @@ export function PinnedCircleReveal({ children, className, scrollVh = 240, stopAt
   // ever falling behind the actual scroll position.
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const radius = useTransform(scrollYProgress, [0.05, 0.85], ["150vmax", stopAt], { clamp: true });
-  const clipPath = useTransform(radius, r => `circle(${r} at 50% 50%)`);
+  const clipPath = useTransform(radius, (r) => `circle(${r} at 50% 50%)`);
 
   return (
     <div ref={ref} className="relative" style={{ height: `${scrollVh}svh` }}>
@@ -213,7 +345,11 @@ export function ScrollTimeline<T>({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
                 transition={{ duration: 0.6, ease: easeOut }}
-                className={onRight ? "lg:col-start-2 lg:pl-6" : "lg:col-start-1 lg:row-start-1 lg:pr-6 lg:text-right"}
+                className={
+                  onRight
+                    ? "lg:col-start-2 lg:pl-6"
+                    : "lg:col-start-1 lg:row-start-1 lg:pr-6 lg:text-right"
+                }
               >
                 {renderImage && (
                   <div
@@ -295,7 +431,12 @@ function buildBentoLayout(count: number): SpreadLayoutItem[] {
   outer: while (layout.length < count) {
     for (let col = 0; col < cols; col++) {
       if (occupied.has(`${row}-${col}`)) continue;
-      layout.push({ top: row * (rowHeight + 2), left: lefts[col]!, width: colWidth, height: rowHeight });
+      layout.push({
+        top: row * (rowHeight + 2),
+        left: lefts[col]!,
+        width: colWidth,
+        height: rowHeight,
+      });
       if (layout.length >= count) break outer;
     }
     row++;
@@ -342,7 +483,8 @@ function SpreadTile({
   // Stagger each tile's scatter window inside the shared 12-90% band so they
   // peel apart one after another instead of all moving at once.
   const staggerSpan = (SCATTER_END - HOLD_END) * 0.6;
-  const start = HOLD_END + (index / Math.max(total - 1, 1)) * ((SCATTER_END - HOLD_END) - staggerSpan);
+  const start =
+    HOLD_END + (index / Math.max(total - 1, 1)) * (SCATTER_END - HOLD_END - staggerSpan);
   const end = start + staggerSpan;
 
   // Compressed stack: every tile piles up near center, fanned 3-20° outward
@@ -352,9 +494,15 @@ function SpreadTile({
   const stackLeft = 50 - final.width / 2 + ((index * 11) % 9) - 4;
   const stackRotate = (index % 2 === 0 ? 1 : -1) * fanDeg;
 
-  const top = useTransform(progress, [0, start, end], [stackTop, stackTop, final.top], { clamp: true });
-  const left = useTransform(progress, [0, start, end], [stackLeft, stackLeft, final.left], { clamp: true });
-  const rotate = useTransform(progress, [0, start, end], [stackRotate, stackRotate, 0], { clamp: true });
+  const top = useTransform(progress, [0, start, end], [stackTop, stackTop, final.top], {
+    clamp: true,
+  });
+  const left = useTransform(progress, [0, start, end], [stackLeft, stackLeft, final.left], {
+    clamp: true,
+  });
+  const rotate = useTransform(progress, [0, start, end], [stackRotate, stackRotate, 0], {
+    clamp: true,
+  });
   const scale = useTransform(progress, [0, start, end], [0.82, 0.82, 1], { clamp: true });
 
   const topPct = useTransform(top, (v) => `${v}%`);
@@ -416,30 +564,30 @@ export function StackToSpread({
     <div ref={ref} className="relative" style={{ height: `${scrollVh}svh` }}>
       <div className={`sticky top-0 h-svh w-full overflow-hidden ${className ?? ""}`}>
         <AnimatePresence>
-        {(title || subtitle || cta) && showTitle && (
-          <motion.div
-            key="stack-spread-title"
-            // Above every tile (max z-index is `total`) so it actually reads
-            // instead of sitting clipped behind the artwork.
-            className="pointer-events-none absolute inset-x-0 top-1/2 z-50 px-5 text-center"
-            initial={{ opacity: 0, scale: 0.92, y: "-50%" }}
-            animate={{ opacity: 1, scale: 1, y: "-50%" }}
-            exit={{ opacity: 0, scale: 0.92, y: "-50%" }}
-            transition={{ duration: 0.35, ease: easeOut }}
-          >
-            {title && (
-              <h2 className="font-display text-3xl font-bold uppercase leading-[0.95] text-foreground drop-shadow-[0_2px_24px_rgba(0,0,0,0.15)] lg:text-6xl">
-                {title}
-              </h2>
-            )}
-            {subtitle && (
-              <p className="mx-auto mt-4 max-w-md text-base text-muted-foreground lg:text-lg">
-                {subtitle}
-              </p>
-            )}
-            {cta && <div className="pointer-events-auto mt-6 flex justify-center">{cta}</div>}
-          </motion.div>
-        )}
+          {(title || subtitle || cta) && showTitle && (
+            <motion.div
+              key="stack-spread-title"
+              // Above every tile (max z-index is `total`) so it actually reads
+              // instead of sitting clipped behind the artwork.
+              className="pointer-events-none absolute inset-x-0 top-1/2 z-50 px-5 text-center"
+              initial={{ opacity: 0, scale: 0.92, y: "-50%" }}
+              animate={{ opacity: 1, scale: 1, y: "-50%" }}
+              exit={{ opacity: 0, scale: 0.92, y: "-50%" }}
+              transition={{ duration: 0.35, ease: easeOut }}
+            >
+              {title && (
+                <h2 className="font-display text-3xl font-bold uppercase leading-[0.95] text-foreground drop-shadow-[0_2px_24px_rgba(0,0,0,0.15)] lg:text-6xl">
+                  {title}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="mx-auto mt-4 max-w-md text-base text-muted-foreground lg:text-lg">
+                  {subtitle}
+                </p>
+              )}
+              {cta && <div className="pointer-events-auto mt-6 flex justify-center">{cta}</div>}
+            </motion.div>
+          )}
         </AnimatePresence>
         {items.map((item, i) => (
           <SpreadTile
@@ -494,7 +642,10 @@ export function FloatingCircleLink({
         transition={{ duration: 16, repeat: Infinity, ease: "linear" }}
       >
         <defs>
-          <path id="floatingCirclePath" d="M 100,100 m -85,0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0" />
+          <path
+            id="floatingCirclePath"
+            d="M 100,100 m -85,0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0"
+          />
         </defs>
         <text fill="currentColor" fontSize="10.5" fontWeight="700" letterSpacing="2.5">
           <textPath href="#floatingCirclePath" startOffset="0%">
@@ -524,13 +675,23 @@ export function FloatingCircleLink({
 // different direction depending on enter vs exit) as it passes — mirroring
 // https://vault.hyperiux.com/demo/sticky-content-wrapper. The pin only
 // releases once the last step has fully passed.
-export function StickySteps<T>({ steps, renderImage, renderContent }: { steps: T[]; renderImage: (step: T, active: boolean) => ReactNode; renderContent: (step: T, active: boolean) => ReactNode }) {
+export function StickySteps<T>({
+  steps,
+  renderImage,
+  renderContent,
+}: {
+  steps: T[];
+  renderImage: (step: T, active: boolean) => ReactNode;
+  renderContent: (step: T, active: boolean) => ReactNode;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [active, setActive] = useState(0);
 
-  useMotionValueEvent(scrollYProgress, "change", v => {
-    const idx = Math.min(steps.length - 1, Math.max(0, Math.floor(v * steps.length)));
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    // Nearest step (not floor): the swap happens at segment midpoints, so
+    // hovering on a boundary while scrolling back and forth can't flicker.
+    const idx = Math.min(steps.length - 1, Math.max(0, Math.round(v * (steps.length - 1))));
     setActive(idx);
   });
 
@@ -543,7 +704,7 @@ export function StickySteps<T>({ steps, renderImage, renderContent }: { steps: T
             {steps.map((s, i) => (
               <div
                 key={i}
-                className="absolute inset-0 transition-all duration-300 ease-out"
+                className="absolute inset-0 will-change-transform transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 style={{
                   opacity: i === active ? 1 : 0,
                   transform: i === active ? "scale(1)" : i < active ? "scale(1.08)" : "scale(0.9)",
@@ -557,8 +718,16 @@ export function StickySteps<T>({ steps, renderImage, renderContent }: { steps: T
             {steps.map((s, i) => (
               <div
                 key={i}
-                className="absolute inset-0 flex flex-col justify-center pl-8 transition-all duration-300 ease-out"
-                style={{ opacity: i === active ? 1 : 0, transform: i === active ? "translateY(0)" : i < active ? "translateY(-24px)" : "translateY(24px)" }}
+                className="absolute inset-0 flex flex-col justify-center pl-8 will-change-transform transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                style={{
+                  opacity: i === active ? 1 : 0,
+                  transform:
+                    i === active
+                      ? "translateY(0)"
+                      : i < active
+                        ? "translateY(-24px)"
+                        : "translateY(24px)",
+                }}
               >
                 {renderContent(s, i === active)}
               </div>
@@ -566,7 +735,12 @@ export function StickySteps<T>({ steps, renderImage, renderContent }: { steps: T
           </div>
         </div>
         <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 justify-center gap-2 lg:bottom-10">
-          {steps.map((_, i) => <span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-8 bg-primary" : "w-1.5 bg-border"}`} />)}
+          {steps.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-8 bg-primary" : "w-1.5 bg-border"}`}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -601,14 +775,21 @@ export function StackingCards<T>({
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [active, setActive] = useState(0);
 
-  useMotionValueEvent(scrollYProgress, "change", v => {
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
     const idx = Math.min(items.length - 1, Math.max(0, Math.floor(v * items.length)));
     setActive(idx);
   });
 
   return (
-    <div ref={ref} className={`relative ${className ?? ""}`} style={{ height: `${items.length * 100}svh` }}>
-      <div className="sticky top-[10svh] overflow-hidden" style={{ height: cardHeight, perspective: `${stackPerspective}px` }}>
+    <div
+      ref={ref}
+      className={`relative ${className ?? ""}`}
+      style={{ height: `${items.length * 100}svh` }}
+    >
+      <div
+        className="sticky top-[10svh] overflow-hidden"
+        style={{ height: cardHeight, perspective: `${stackPerspective}px` }}
+      >
         {items.map((item, i) => {
           // Only the active card and the one just before it (still mid-flip-away) need to render —
           // everything else is either not reached yet or long gone.
@@ -626,7 +807,9 @@ export function StackingCards<T>({
                 key={i}
                 className="absolute inset-0 overflow-hidden transition-[transform,opacity] duration-[900ms] ease-in-out"
                 style={{
-                  transform: tiltEnabled ? "translateY(-6%) scale(0.94) rotateX(50deg)" : "translateY(-100%) scale(0.96)",
+                  transform: tiltEnabled
+                    ? "translateY(-6%) scale(0.94) rotateX(50deg)"
+                    : "translateY(-100%) scale(0.96)",
                   // Finishes fully invisible — otherwise it lingers on screen, tilted, for
                   // the entire time the next card is active.
                   opacity: 0,
@@ -636,7 +819,9 @@ export function StackingCards<T>({
                   zIndex: items.length + 1,
                 }}
               >
-                <div className={imageZoomEnabled ? "h-full w-full scale-110" : "h-full w-full"}>{renderCard(item, i, false)}</div>
+                <div className={imageZoomEnabled ? "h-full w-full scale-110" : "h-full w-full"}>
+                  {renderCard(item, i, false)}
+                </div>
               </div>
             );
           }
@@ -667,7 +852,12 @@ export function StackingCards<T>({
           );
         })}
         <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 justify-center gap-2 lg:bottom-10">
-          {items.map((_, i) => <span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-8 bg-primary" : "w-1.5 bg-border"}`} />)}
+          {items.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-8 bg-primary" : "w-1.5 bg-border"}`}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -691,21 +881,32 @@ export function HorizontalFeatureReveal<T>({
   const x = useTransform(scrollYProgress, [0, 1], ["0%", `-${(items.length - 1) * 100}%`]);
   const [active, setActive] = useState(0);
 
-  useMotionValueEvent(scrollYProgress, "change", v => {
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
     const idx = Math.min(items.length - 1, Math.max(0, Math.round(v * (items.length - 1))));
     setActive(idx);
   });
 
   return (
-    <div ref={ref} className={`relative ${className ?? ""}`} style={{ height: `${items.length * 100}svh` }}>
+    <div
+      ref={ref}
+      className={`relative ${className ?? ""}`}
+      style={{ height: `${items.length * 100}svh` }}
+    >
       <div className="sticky top-0 h-svh overflow-hidden">
         <motion.div className="flex h-full" style={{ x }}>
           {items.map((item, i) => (
-            <div key={i} className="h-full w-full shrink-0">{renderItem(item, i, i === active)}</div>
+            <div key={i} className="h-full w-full shrink-0">
+              {renderItem(item, i, i === active)}
+            </div>
           ))}
         </motion.div>
         <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 gap-2 lg:bottom-12">
-          {items.map((_, i) => <span key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-8 bg-primary" : "w-1.5 bg-border"}`} />)}
+          {items.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? "w-8 bg-primary" : "w-1.5 bg-border"}`}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -714,7 +915,17 @@ export function HorizontalFeatureReveal<T>({
 
 // "Horizontal scroll section" — a pinned track that scrubs horizontally as the
 // page scrolls vertically, instead of relying on manual drag/overflow.
-export function HorizontalScrollSection({ children, className, trackClassName, distance = "-70%" }: { children: ReactNode; className?: string; trackClassName?: string; distance?: string }) {
+export function HorizontalScrollSection({
+  children,
+  className,
+  trackClassName,
+  distance = "-70%",
+}: {
+  children: ReactNode;
+  className?: string;
+  trackClassName?: string;
+  distance?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const x = useTransform(scrollYProgress, [0, 1], ["2%", distance]);
@@ -722,7 +933,9 @@ export function HorizontalScrollSection({ children, className, trackClassName, d
   return (
     <div ref={ref} className={`relative h-[280svh] ${className ?? ""}`}>
       <div className="sticky top-0 flex h-svh items-center overflow-hidden">
-        <motion.div style={{ x }} className={`flex gap-4 ${trackClassName ?? ""}`}>{children}</motion.div>
+        <motion.div style={{ x }} className={`flex gap-4 ${trackClassName ?? ""}`}>
+          {children}
+        </motion.div>
       </div>
     </div>
   );
@@ -747,7 +960,7 @@ export function StickyScrollReveal<T>({
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [active, setActive] = useState(0);
 
-  useMotionValueEvent(scrollYProgress, "change", latest => {
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
     const breakpoints = items.map((_, index) => index / items.length);
     const closest = breakpoints.reduce((acc, breakpoint, index) => {
       const distance = Math.abs(latest - breakpoint);
@@ -757,7 +970,11 @@ export function StickyScrollReveal<T>({
   });
 
   return (
-    <div ref={ref} className={`relative flex gap-10 ${className ?? ""}`} style={{ minHeight: `${items.length * 140}svh` }}>
+    <div
+      ref={ref}
+      className={`relative flex gap-10 ${className ?? ""}`}
+      style={{ minHeight: `${items.length * 140}svh` }}
+    >
       <div className="relative flex items-start px-4 lg:px-10">
         <div className="max-w-xl">
           {items.map((item, i) => (
@@ -788,7 +1005,19 @@ export function StickyScrollReveal<T>({
 // Scroll stack — each card is individually `position: sticky` with a slightly
 // increasing top offset, so as you scroll, each new card piles on top of the
 // previous one (CSS-only, no scroll-driven math — far more robust).
-export function ScrollStack<T>({ items, renderItem, topOffset = 112, step = 20, className }: { items: T[]; renderItem: (item: T, index: number) => ReactNode; topOffset?: number; step?: number; className?: string }) {
+export function ScrollStack<T>({
+  items,
+  renderItem,
+  topOffset = 112,
+  step = 20,
+  className,
+}: {
+  items: T[];
+  renderItem: (item: T, index: number) => ReactNode;
+  topOffset?: number;
+  step?: number;
+  className?: string;
+}) {
   return (
     <div className={`relative ${className ?? ""}`}>
       {items.map((item, i) => (

@@ -8,6 +8,8 @@
 // Set PUBLIC_WHATSAPP_NUMBER (E.164 without +, e.g. 2126XXXXXXXX) in env.
 // Falls back to empty -> WhatsApp button hidden until configured.
 
+// Phone verified from the Tachrone company profile (page data, Sep 2026).
+// Env vars still override it when set.
 export const SITE = {
   name: "Lahlou Workers",
   legalName: "LAHLOU WORKERS SARL AU",
@@ -16,6 +18,9 @@ export const SITE = {
   locale: "fr-MA",
   lang: "fr",
   email: "lahlou.workers@gmail.com",
+  phone: "+212 661-728217",
+  phoneHref: "tel:+212661728217",
+  whatsappNumber: "212661728217",
   // Keep legacy alias working too (mailto fallback list)
   emailAliases: ["contact@lahlou-workers.com"],
   address: {
@@ -66,7 +71,7 @@ export function whatsappLink(message?: string): string | null {
           "VITE_WHATSAPP_NUMBER"
         ] ?? "")
       : "";
-  const phone = (num || clientNum || "").replace(/\D/g, "");
+  const phone = (num || clientNum || SITE.whatsappNumber).replace(/\D/g, "");
   if (!phone) return null;
   const text = message ? `?text=${encodeURIComponent(message)}` : "";
   return `https://wa.me/${phone}${text}`;

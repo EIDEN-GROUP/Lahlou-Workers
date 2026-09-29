@@ -7,7 +7,7 @@ let cached: SupabaseClient | null = null;
 
 function required(name: string): string {
   const v = process.env[name];
-  if (!v) throw new Error(`Missing env ${name} — see .env.example`);
+  if (!v) throw new Error(`Missing env ${name} - see .env.example`);
   return v;
 }
 

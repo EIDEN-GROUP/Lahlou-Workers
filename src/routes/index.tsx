@@ -122,56 +122,34 @@ const steps = [
   },
 ];
 
-const projectCardsData: { category: string; title: string; src: string; detail: string }[] = [
-  {
-    category: "Résidentiel · Agadir",
-    title: "Résidences MISSIMI",
-    src: projectImage,
-    detail: "Ensemble résidentiel de standing livré clé en main, du gros œuvre aux finitions.",
-  },
-  {
-    category: "Résidentiel · Agadir",
-    title: "Immeuble R+5 post-tension",
-    src: galerieAerien,
-    detail: "Structure post-tension pilotée avec un suivi technique constant jusqu’à la livraison.",
-  },
-  {
-    category: "Résidentiel · Agadir",
-    title: "Villa avec piscine",
-    src: teamImage,
-    detail: "Villa individuelle avec piscine, finitions haut de gamme et équipe dédiée sur site.",
-  },
-  {
-    category: "Industriel · Tan-Tan",
-    title: "Infrastructure cimenterie",
-    src: craftImage,
-    detail:
-      "Chantier industriel d’envergure mené en coordination avec les équipes techniques du client.",
-  },
-  {
-    category: "Rénovation · Agadir",
-    title: "Rénovation siège administratif",
-    src: heroImage,
-    detail:
-      "Réhabilitation complète d’un siège administratif en activité, sans interruption d’exploitation.",
-  },
-  {
-    category: "Commercial · Agadir",
-    title: "Aménagement de bureaux",
-    src: serviceGrosOeuvre,
-    detail: "Aménagement d’espaces de bureaux, du second œuvre à la livraison des lots.",
-  },
-];
-
 // Hoisted to module scope on purpose: the homepage re-renders on every FAQ
 // toggle, and an inline .map() here would hand StackedProjects a new array
 // identity each time, needlessly tearing down its live GSAP pins.
-const homeCards = projectCardsData.slice(0, 3).map((p) => ({
-  category: p.category.split(" · ")[0] ?? p.category,
-  title: p.title,
-  description: p.detail,
-  image: p.src,
-}));
+const homeCards = [
+  {
+    category: "Résidentiel",
+    title: "Résidences MISSIMI",
+    description: "Ensemble résidentiel de standing livré clé en main, du gros œuvre aux finitions.",
+    image: projectImage,
+    href: "/realisations/residences-missimi",
+  },
+  {
+    category: "Résidentiel",
+    title: "Immeuble R+5 en post-tension",
+    description:
+      "Structure post-tension pilotée avec un suivi technique constant jusqu’à la livraison.",
+    image: galerieAerien,
+    href: "/realisations/immeuble-r-plus-5",
+  },
+  {
+    category: "Résidentiel",
+    title: "3 villas avec piscines",
+    description:
+      "Villa individuelle avec piscine, finitions haut de gamme et équipe dédiée sur site.",
+    image: teamImage,
+    href: "/realisations/villas-piscines",
+  },
+];
 
 const partnerLogos = [
   partnerLogo01,
@@ -378,7 +356,7 @@ function Index() {
           </FadeUp>
         </div>
         <div className="relative mt-16">
-          <StackedProjects items={homeCards} />
+          <StackedProjects items={homeCards} tilt />
         </div>
       </section>
 
@@ -468,7 +446,8 @@ function Index() {
                 <img
                   src={t.image}
                   alt=""
-                  loading="lazy"
+                  loading={i < testimonials.length ? "eager" : "lazy"}
+                  decoding="async"
                   width={720}
                   height={480}
                   className="aspect-[4/3] w-full object-cover"

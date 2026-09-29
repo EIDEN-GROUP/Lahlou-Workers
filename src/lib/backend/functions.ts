@@ -4,7 +4,7 @@
 // never includes service keys / node:crypto / nodemailer.
 
 import { createServerFn } from "@tanstack/react-start";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
   contactSchema,
   devisSchema,
@@ -12,7 +12,11 @@ import {
   loginSchema,
   projectSchema,
   recruitSchema,
+  resetPasswordSchema,
+  visitSchema,
 } from "@/lib/backend/schemas";
+
+export type VisitRow = { createdAt: string; path: string };
 
 export type ContactSubmission = {
   id: string;
@@ -152,11 +156,11 @@ async function requestIp(): Promise<string> {
   }
 }
 
-async function checkRate(key: string, limit: number): Promise<void> {
+async function checkRate(key: string, limit: number, windowMs = 60_000): Promise<void> {
   const { ensureEnv } = await import("@/lib/backend/env");
   await ensureEnv();
   const { rateLimit } = await import("@/lib/backend/rate-limit");
-  if (!rateLimit(`${await requestIp()}:${key}`, limit, 60_000)) {
+  if (!rateLimit(`${await requestIp()}:${key}`, limit, windowMs)) {
     throw new Error("Trop de requêtes. Réessayez dans une minute.");
   }
 }
@@ -205,6 +209,73 @@ export const adminMe = createServerFn({ method: "GET" }).handler(async () => {
   const { isAdminRequest } = await import("@/lib/backend/auth");
   return { authed: isAdminRequest() };
 });
+
+// --- Mot de passe oublié (lien à usage unique, 1 h, envoyé à l'email admin) ---
+function resetTokenHash(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+async function resetLinkBase(): Promise<string> {
+  try {
+    const mod = (await import("@tanstack/react-start/server")) as unknown as {
+      getRequestHeaders?: () => Headers | Record<string, string>;
+    };
+    const h = mod.getRequestHeaders?.();
+    const headers = h instanceof Headers ? h : new Headers(h as Record<string, string>);
+    const origin =
+      headers.get("origin") ?? headers.get("referer")?.split("/").slice(0, 3).join("/");
+    if (origin?.startsWith("http")) return origin;
+  } catch {
+    // fallback below
+  }
+  const { SITE } = await import("@/lib/site");
+  return SITE.url;
+}
+
+export const requestPasswordReset = createServerFn({ method: "POST" }).handler(async () => {
+  await checkRate("reset-request", 3, 60 * 60 * 1000);
+  const { isSupabaseConfigured, getSupabaseAdmin } = await import("@/lib/backend/supabase");
+  if (!isSupabaseConfigured()) throw new Error("Base de données non configurée");
+  const { randomBytes } = await import("node:crypto");
+  const token = randomBytes(32).toString("hex");
+  const db = getSupabaseAdmin();
+  const { error } = await db.from("admin_resets").insert({
+    token_hash: resetTokenHash(token),
+    expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+  });
+  if (error) throw new Error("Enregistrement impossible");
+  const link = `${await resetLinkBase()}/admin/reset?token=${token}`;
+  const { sendPasswordResetEmail } = await import("@/lib/backend/mailer");
+  const mailed = await sendPasswordResetEmail(link);
+  return { ok: true as const, mailed };
+});
+
+export const resetPassword = createServerFn({ method: "POST" })
+  .validator((d: unknown) => resetPasswordSchema.parse(d))
+  .handler(async ({ data }) => {
+    await checkRate("reset-confirm", 5);
+    const { getSupabaseAdmin } = await import("@/lib/backend/supabase");
+    const db = getSupabaseAdmin();
+    const { data: row, error } = await db
+      .from("admin_resets")
+      .select("id,expires_at,used_at")
+      .eq("token_hash", resetTokenHash(data.token))
+      .maybeSingle();
+    const valid =
+      !error &&
+      row &&
+      !(row as { used_at: string | null }).used_at &&
+      new Date((row as { expires_at: string }).expires_at).getTime() > Date.now();
+    if (!valid) throw new Error("Lien invalide ou expiré.");
+    const bcrypt = (await import("bcryptjs")).default;
+    const { setDbPasswordHash } = await import("@/lib/backend/auth");
+    await setDbPasswordHash(await bcrypt.hash(data.password, 12));
+    await db
+      .from("admin_resets")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", (row as { id: string }).id);
+    return { ok: true as const };
+  });
 
 // --- Contacts ---
 export const submitContact = createServerFn({ method: "POST" })
@@ -478,3 +549,33 @@ export const uploadProjectImage = createServerFn({ method: "POST" })
     const { data: pub } = supabase.storage.from("project-images").getPublicUrl(path);
     return { ok: true as const, url: pub.publicUrl };
   });
+
+// --- Visites (tracking anonyme: chemin + horodatage uniquement) ---
+export const trackVisit = createServerFn({ method: "POST" })
+  .validator((d: unknown) => visitSchema.parse(d))
+  .handler(async ({ data }) => {
+    await checkRate("visit", 60);
+    const { isSupabaseConfigured, getSupabaseAdmin } = await import("@/lib/backend/supabase");
+    if (!isSupabaseConfigured()) return { ok: true as const };
+    const db = getSupabaseAdmin();
+    const { error } = await db.from("visits").insert({ path: data.path });
+    if (error) throw new Error("Enregistrement impossible");
+    return { ok: true as const };
+  });
+
+export const listVisits = createServerFn({ method: "GET" }).handler(async () => {
+  await requireAdmin();
+  const { isSupabaseConfigured, getSupabaseAdmin } = await import("@/lib/backend/supabase");
+  if (!isSupabaseConfigured()) return [] as VisitRow[];
+  const db = getSupabaseAdmin();
+  const { data, error } = await db
+    .from("visits")
+    .select("created_at,path")
+    .order("created_at", { ascending: false })
+    .limit(5000);
+  if (error) throw new Error("Lecture impossible");
+  return (data as { created_at: string; path: string }[]).map((r) => ({
+    createdAt: String(r.created_at),
+    path: String(r.path),
+  }));
+});
