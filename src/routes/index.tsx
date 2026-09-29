@@ -133,31 +133,46 @@ const galleryCards: FlipCardItem[] = [
     src: resultFacadeHero,
     alt: "Façade d’une résidence livrée à Agadir, lumière du soir",
     category: "Résidentiel",
+    series: "Chantiers livrés",
     title: "Résidences MISSIMI",
+    description:
+      "Un ensemble résidentiel mené du terrassement aux enduits de façade. Les balcons, les garde-corps et les finitions extérieures ont été repris jusqu’au dernier niveau avant réception.",
   },
   {
     src: resultAerial,
     alt: "Vue aérienne d’un ensemble résidentiel livré",
     category: "Résidentiel",
-    title: "Immeuble R+5, post-tension",
+    series: "Gros œuvre",
+    title: "Immeuble R+5",
+    description:
+      "Une ossature en dalle post-tension, montée niveau par niveau avec suivi de la prise du béton. Les grandes portées ont permis de dégager les espaces communs en rez-de-chaussée.",
   },
   {
     src: resultVillaPool,
     alt: "Villa avec piscine livrée à Agadir",
     category: "Résidentiel",
+    series: "Villas",
     title: "Villas avec piscines",
+    description:
+      "Trois villas livrées clé en main, terrassement et gros œuvre compris. Les bassins ont été coulés et étanchés par nos équipes, puis raccordés aux réseaux du terrain.",
   },
   {
     src: resultRooftop,
     alt: "Terrasse en toiture avec vue sur la ville",
     category: "Finitions",
+    series: "Toitures",
     title: "Terrasses et toitures",
+    description:
+      "Étanchéité, forme de pente et revêtement posés sur une toiture accessible. La terrasse a été remise prête à l’usage, garde-corps et évacuations vérifiés.",
   },
   {
     src: resultInterior,
     alt: "Intérieur d’un appartement livré, prêt à emménager",
     category: "Second œuvre",
+    series: "Aménagement",
     title: "Appartements livrés",
+    description:
+      "Cloisons, réseaux électriques, plomberie et revêtements de sol posés selon les plans validés. Chaque lot est vérifié en check-list avant la remise des clés.",
   },
 ];
 
@@ -507,24 +522,20 @@ function Index() {
       </section>
 
       <section id="galerie" className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-28">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center lg:gap-20">
-          <FadeUp>
-            <Eyebrow label="Galerie" />
-            <h2 className="mt-6 font-display text-[32px] font-bold leading-[1.05] lg:text-[52px]">
-              Ce que ça donne, <span className="text-primary">livré</span>.
-            </h2>
-            <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg">
-              Des chantiers terminés, réceptionnés et remis aux clients. Dépliez la pile et
-              regardez de plus près.
-            </p>
-            <div className="mt-8">
-              <SplitButton href="/realisations">Voir tous les chantiers</SplitButton>
+        <FadeUp>
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <Eyebrow label="Galerie" />
+              <h2 className="mt-6 font-display text-[32px] font-bold leading-[1.05] lg:text-[52px]">
+                Ce que ça donne, <span className="text-primary">livré</span>.
+              </h2>
             </div>
-          </FadeUp>
-          <FadeUp delay={0.1}>
-            <FlipCardStack items={galleryCards} />
-          </FadeUp>
-        </div>
+            <SplitButton href="/realisations">Voir tous les chantiers</SplitButton>
+          </div>
+        </FadeUp>
+        <FadeUp delay={0.1} className="mt-14 lg:mt-20">
+          <FlipCardStack items={galleryCards} />
+        </FadeUp>
       </section>
 
       <section className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-28">

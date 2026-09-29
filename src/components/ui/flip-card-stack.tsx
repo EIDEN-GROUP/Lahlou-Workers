@@ -27,16 +27,19 @@ const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : use
 export type FlipCardItem = {
   src: string;
   alt: string;
-  /** small label above the title, e.g. the project type */
+  /** left-hand label in the meta line, e.g. the project type */
   category: string;
+  /** right-hand label in the meta line, e.g. the series */
+  series: string;
   title: string;
+  description: string;
 };
 
 export function FlipCardStack({
   items,
   duration = 0.65,
   radius = 0,
-  gap = 12,
+  gap = 10,
   stackRotate = 4,
   className,
 }: {
@@ -76,44 +79,23 @@ export function FlipCardStack({
   const current = items[active];
   const rest = items.map((item, i) => ({ item, i })).filter(({ i }) => i !== active);
 
-  return (
-    <div ref={root} className={className}>
-      {/* main frame */}
-      <button
-        type="button"
-        onClick={() => {
-          capture();
-          setSpread((s) => !s);
-        }}
-        aria-expanded={spread}
-        aria-label={spread ? "Replier la pile de photos" : "Déplier la pile de photos"}
-        className="group relative block w-full cursor-pointer overflow-hidden border border-border"
-        style={{ borderRadius: `${radius}px` }}
-      >
-        <div className="aspect-[16/10] w-full">
-          {current && (
-            <img
-              key={current.src}
-              data-flip-id={current.src}
-              src={current.src}
-              alt={current.alt}
-              loading="lazy"
-              draggable={false}
-              className="h-full w-full object-cover"
-            />
-          )}
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/80 to-transparent p-6 text-left text-background">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-background/70">
-            {current?.category} · {String(active + 1).padStart(2, "0")}
-          </p>
-          <p className="mt-1 font-display text-xl font-bold lg:text-2xl">{current?.title}</p>
-        </div>
-      </button>
+  const toggle = () => {
+    capture();
+    setSpread((s) => !s);
+  };
 
-      {/* the deck: collapsed until clicked, then a row of frames */}
+  return (
+    <div
+      ref={root}
+      className={`grid items-center gap-10 lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14 ${className ?? ""}`}
+    >
+      {/* deck — a column beside the copy on desktop, a row above it on mobile */}
       <div
-        className={`relative mt-5 ${spread ? "flex flex-wrap" : "h-24 lg:h-28"}`}
+        className={`relative order-2 lg:order-1 ${
+          spread
+            ? "flex flex-row flex-wrap lg:flex-col"
+            : "h-[86px] w-full lg:h-[300px] lg:w-[104px]"
+        }`}
         style={spread ? { gap: `${gap}px` } : undefined}
       >
         {rest.map(({ item, i }, order) => (
@@ -125,24 +107,28 @@ export function FlipCardStack({
               if (spread) setActive(i);
               else setSpread(true);
             }}
-            aria-label={spread ? `Afficher ${item.title}` : "Déplier la pile de photos"}
-            className={`overflow-hidden border border-border ${
-              spread
-                ? "relative h-24 w-32 cursor-pointer lg:h-28 lg:w-40"
-                : "absolute top-0 h-24 w-32 cursor-pointer lg:h-28 lg:w-40"
+            aria-label={spread ? `Afficher : ${item.title}` : "Déplier la pile de photos"}
+            data-flip-id={item.src}
+            className={`h-[86px] w-[72px] cursor-pointer overflow-hidden border border-border lg:h-[104px] lg:w-[88px] ${
+              spread ? "relative" : "absolute"
             }`}
             style={{
               borderRadius: `${radius}px`,
-              ...(spread ? {} : { left: `${order * 14}px`, zIndex: rest.length - order }),
+              // Offset via left/top, not transform: Flip drives transform, and
+              // an inline one here would be fighting it every frame.
+              ...(spread
+                ? {}
+                : { zIndex: rest.length - order, left: order * 9, top: order * 5 }),
             }}
           >
             {/* inner element owns the tilt so Flip keeps the outer transform */}
             <span
               className="block h-full w-full transition-transform duration-500"
-              style={{ transform: spread ? "rotate(0deg)" : `rotate(${(order + 1) * stackRotate}deg)` }}
+              style={{
+                transform: spread ? "rotate(0deg)" : `rotate(${(order + 1) * stackRotate}deg)`,
+              }}
             >
               <img
-                data-flip-id={item.src}
                 src={item.src}
                 alt={item.alt}
                 loading="lazy"
@@ -152,12 +138,54 @@ export function FlipCardStack({
             </span>
           </button>
         ))}
+      </div>
 
+      {/* copy */}
+      <div className="order-3 lg:order-2">
+        <p className="font-display text-sm font-bold tracking-tight">
+          {String(active + 1).padStart(2, "0")}
+          <span className="text-muted-foreground"> / {String(items.length).padStart(2, "0")}</span>
+        </p>
+        <h3 className="mt-6 font-display text-[32px] font-bold leading-[1.05] lg:text-[52px]">
+          {current?.title}
+        </h3>
+        <p className="mt-6 text-sm text-muted-foreground">
+          {current?.category} / {current?.series} / {String(active + 1).padStart(2, "0")}
+        </p>
+        <p className="mt-5 max-w-md text-base leading-relaxed lg:text-lg">{current?.description}</p>
         {!spread && (
-          <span className="pointer-events-none absolute left-0 top-full mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Cliquez pour déplier
-          </span>
+          <button
+            type="button"
+            onClick={toggle}
+            className="mt-8 text-xs font-semibold uppercase tracking-[0.14em] text-primary underline-offset-4 hover:underline"
+          >
+            Déplier la pile
+          </button>
         )}
+      </div>
+
+      {/* main frame */}
+      <div className="order-1 lg:order-3">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={spread}
+          aria-label={spread ? "Replier la pile de photos" : "Déplier la pile de photos"}
+          data-flip-id={current?.src}
+          className="block aspect-[4/5] w-full cursor-pointer overflow-hidden border border-border"
+          style={{ borderRadius: `${radius}px` }}
+        >
+          {current && (
+            <img
+              key={current.src}
+              src={current.src}
+              alt={current.alt}
+              loading="lazy"
+              draggable={false}
+              className="h-full w-full object-cover"
+            />
+          )}
+        </button>
       </div>
     </div>
   );
