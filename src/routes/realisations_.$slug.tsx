@@ -4,7 +4,6 @@ import { SplitButton } from "@/components/ui/split-button";
 import { FadeUp, FloatingCircleLink } from "@/components/scroll-fx";
 import { VaultTimeline } from "@/components/ui/vault-timeline";
 import StackSpread, { type StackSpreadCard } from "@/components/ui/stack-spread";
-import { ProjectTimeline } from "@/components/project-timeline";
 import { PROJECT_STEPS } from "@/lib/project-steps";
 import projectImage from "@/assets/lahlou-project.webp";
 import projectR5 from "@/assets/galerie-chantier-aerien.webp";
@@ -238,6 +237,23 @@ function ProjectDetail() {
         }))
       : undefined;
 
+  // MISSIMI's steps carry their own artwork and live on this page; the rest are
+  // text-only in PROJECT_STEPS. Both shapes feed the same timeline — `image` is
+  // optional on a milestone.
+  const timelineItems =
+    slug === "residences-missimi"
+      ? steps.map((s, i) => ({
+          id: `etape-${i + 1}`,
+          label: s.title,
+          content: s.text,
+          image: s.image,
+        }))
+      : (PROJECT_STEPS[slug] ?? []).map((s, i) => ({
+          id: `etape-${i + 1}`,
+          label: s.title,
+          content: s.text,
+        }));
+
   return (
     <PageShell header="hero">
       <section className="relative min-h-[70svh] overflow-hidden bg-foreground text-background">
@@ -269,22 +285,13 @@ function ProjectDetail() {
         </FadeUp>
       </section>
 
-      {slug === "residences-missimi" ? (
-        <VaultTimeline
-          items={steps.map((s, i) => ({
-            id: `etape-${i + 1}`,
-            label: s.title,
-            content: s.text,
-            image: s.image,
-          }))}
-          title="Étapes du chantier"
-          periodLabel={`${project.city} · ${project.year}`}
-          imageUrl={project.hero}
-          imageAlt={project.name}
-        />
-      ) : (
-        <ProjectTimeline steps={PROJECT_STEPS[slug] ?? []} />
-      )}
+      <VaultTimeline
+        items={timelineItems}
+        title="Étapes du chantier"
+        periodLabel={`${project.city} · ${project.year}`}
+        imageUrl={project.hero}
+        imageAlt={project.name}
+      />
 
       <StackSpread
         title="Le chantier livré."
