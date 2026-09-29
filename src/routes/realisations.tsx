@@ -127,7 +127,11 @@ function Realisations() {
 
   return (
     <PageShell>
-      <section className="relative mx-auto max-w-[1440px] overflow-hidden px-5 pb-10 pt-40 lg:px-8 lg:pt-48">
+      {/* No `overflow-hidden` here: the filter pills float outside the
+          section's box, and clipping it cut off whichever category landed
+          left of the page edge. The stamp below is positioned inside the
+          bounds anyway, so nothing needed the clip. */}
+      <section className="relative mx-auto max-w-[1440px] px-5 pb-10 pt-40 lg:px-8 lg:pt-48">
         <img
           src={stampChantierLivre}
           alt=""

@@ -20,6 +20,8 @@ const GAP = 12;
 const ROW = 52;
 const DRAG_MIN = 4;
 const ZONE_PAD = 8;
+// Breathing room kept between the outermost pill and the viewport edge.
+const EDGE_PAD = 16;
 
 const jitter = (i: number) => {
   const x = Math.sin(i * 12.9898 + 4.1414) * 43758.5453;
@@ -133,12 +135,40 @@ export function FolderFloat({
   const [viewportWidth, setViewportWidth] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth : 1280,
   );
+  // How much room the anchor actually has either side of it. The widget is
+  // left-aligned under a heading, so a spread sized only against the window
+  // still reaches past the page's left edge — pills there end up clipped or
+  // off-screen. Measured, not assumed, because the anchor's offset depends on
+  // the page's own padding and max-width.
+  const [room, setRoom] = useState({ left: Infinity, right: Infinity });
   useEffect(() => {
-    const onResize = () => setViewportWidth(window.innerWidth);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    const measure = () => {
+      setViewportWidth(window.innerWidth);
+      const el = anchorRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const centre = rect.left + rect.width / 2;
+      setRoom({
+        left: Math.max(0, centre - EDGE_PAD),
+        right: Math.max(0, window.innerWidth - centre - EDGE_PAD),
+      });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
-  const effectiveSpread = Math.min(spread, Math.max(90, viewportWidth * 0.42));
+  // `room` is measured to the pill's centre, so half of the widest pill still
+  // hangs past it — hold that back too.
+  const halfWidest = sizes.length ? Math.max(...sizes.map((s) => s.w)) / 2 : 40;
+  const effectiveSpread = Math.max(
+    90,
+    Math.min(
+      spread,
+      Math.max(90, viewportWidth * 0.42),
+      room.left - halfWidest,
+      room.right - halfWidest,
+    ),
+  );
   // On a short/narrow phone screen the pills floating upward by `lift` can climb
   // straight into whatever heading sits above the widget — shrink the float height
   // (and the row spacing that stacks on top of it) well below the desktop default.
