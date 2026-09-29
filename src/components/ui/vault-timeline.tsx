@@ -19,7 +19,8 @@
  * track width and travel are scaled from the real counts, but this is the part
  * most worth eyeballing if the spacing looks off.
  */
-import { type CSSProperties, useRef, useSyncExternalStore } from "react";
+import { type CSSProperties, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { motion } from "motion/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
@@ -54,6 +55,18 @@ function usePrefersReducedMotion() {
     () => (typeof window === "undefined" ? false : (window.matchMedia?.(REDUCED_MOTION_QUERY)?.matches ?? false)),
     () => false,
   );
+}
+
+function useIsDesktop(breakpoint = 1024) {
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${breakpoint}px)`);
+    const read = () => setIsDesktop(mq.matches);
+    read();
+    mq.addEventListener("change", read);
+    return () => mq.removeEventListener("change", read);
+  }, [breakpoint]);
+  return isDesktop;
 }
 
 /** Reveal windows, spread evenly instead of the original's fixed 7 entries. */
@@ -92,6 +105,7 @@ export function VaultTimeline({
   const sectionRef = useRef<HTMLElement>(null);
   const wholeSliderRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
+  const isDesktop = useIsDesktop();
   const normalizedDuration = Math.max(0.2, scrollDuration);
 
   // Alternate into the two rows, preserving order along the line.
@@ -110,41 +124,35 @@ export function VaultTimeline({
   useGSAP(
     () => {
       const section = sectionRef.current;
-      if (!section) return;
-
-      const isTablet = window.innerWidth >= 642 && window.innerWidth <= 1024;
-      const isMobile = window.innerWidth < 642;
-      const slidePercent = isTablet ? -60 : isMobile ? -57 : slidePercentDesktop;
-      const lineWidth = isTablet ? "75%" : isMobile ? "65%" : "98%";
-      const lineStart = isTablet ? "top 20%" : isMobile ? "top 30%" : "top 25%";
-      const slideEnd = isMobile ? "82% 50%" : "92% bottom";
-      const lineEnd = isMobile ? "80% 50%" : isTablet ? "90% bottom" : "92% bottom";
+      // Below lg the sideways track isn't rendered at all, so there is nothing
+      // here to scrub and no elements for these selectors to find.
+      if (!section || !isDesktop) return;
 
       gsap
         .timeline({
-          scrollTrigger: { trigger: section, start: "2% top", end: slideEnd, scrub: true },
+          scrollTrigger: { trigger: section, start: "2% top", end: "92% bottom", scrub: true },
           defaults: { ease: "none" },
         })
-        .fromTo(wholeSliderRef.current, { xPercent: 0 }, { xPercent: slidePercent });
+        .fromTo(wholeSliderRef.current, { xPercent: 0 }, { xPercent: slidePercentDesktop });
 
       if (reducedMotion) {
-        gsap.set(".journey-line", { width: lineWidth });
+        gsap.set(".journey-line", { width: "98%" });
         return;
       }
 
       gsap.to(".journey-line", {
-        width: lineWidth,
+        width: "98%",
         ease: "none",
-        scrollTrigger: { trigger: section, start: lineStart, end: lineEnd, scrub: true },
+        scrollTrigger: { trigger: section, start: "top 25%", end: "92% bottom", scrub: true },
       });
     },
-    { dependencies: [reducedMotion, slidePercentDesktop], scope: sectionRef },
+    { dependencies: [reducedMotion, slidePercentDesktop, isDesktop], scope: sectionRef },
   );
 
   useGSAP(
     () => {
       const section = sectionRef.current;
-      if (!section) return;
+      if (!section || !isDesktop) return;
 
       if (reducedMotion) {
         items.forEach((item) => {
@@ -176,13 +184,7 @@ export function VaultTimeline({
         });
       });
 
-      const isMobile = window.innerWidth < 642;
-      const isTablet = window.innerWidth >= 642 && window.innerWidth <= 1024;
-      const positions = isMobile
-        ? buildPositions(items.length, 22, 69, 10)
-        : isTablet
-          ? buildPositions(items.length, 16, 70, 12)
-          : buildPositions(items.length, 6, 65, 20);
+      const positions = buildPositions(items.length, 6, 65, 20);
 
       items.forEach((item, index) => {
         const range = positions[index];
@@ -229,7 +231,7 @@ export function VaultTimeline({
         window.removeEventListener("resize", handleResize);
       };
     },
-    { dependencies: [normalizedDuration, reducedMotion, items], scope: sectionRef },
+    { dependencies: [normalizedDuration, reducedMotion, items, isDesktop], scope: sectionRef },
   );
 
   const milestone = (item: VaultTimelineItem, isTop: boolean) => (
@@ -302,13 +304,78 @@ export function VaultTimeline({
     </div>
   );
 
+  // Below lg: a vertical timeline instead of the sideways track. The original
+  // ships an 800vw track on phones (`max-md:w-[800vw]`) while also switching
+  // the same element to `flex-col`, which is self-contradictory — and an 800vw
+  // sideways drag is the exact failure the vault's own notes warn about.
+  if (!isDesktop) {
+    return (
+      <section ref={sectionRef} className="w-full py-16" style={sectionStyle}>
+        <div className="mx-auto max-w-[1440px] px-5">
+          <h2 className="font-display text-[8vw] font-bold leading-[0.95] sm:text-3xl">{title}</h2>
+          {periodLabel && (
+            <p className="mt-2 text-sm" style={mutedTextStyle}>
+              {periodLabel}
+            </p>
+          )}
+
+          <ol className="relative mt-10">
+            {/* spine */}
+            <span
+              aria-hidden
+              className="absolute bottom-0 left-[7px] top-2 w-px"
+              style={{ backgroundColor: `${mutedTextColor}55` }}
+            />
+            {items.map((item, i) => (
+              <motion.li
+                key={item.id}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="relative pb-12 pl-9 last:pb-0"
+              >
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-1.5 block h-[15px] w-[15px] rounded-full"
+                  style={{ backgroundColor: activeColor }}
+                />
+                <p className="text-xs font-semibold uppercase tracking-[0.14em]" style={mutedTextStyle}>
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <h4 className="mt-2 font-display text-xl font-bold leading-tight">{item.label}</h4>
+                {item.image && (
+                  <div
+                    className="mt-4 h-40 w-full overflow-hidden border"
+                    style={{ borderColor: `${mutedTextColor}33` }}
+                  >
+                    <img
+                      src={item.image}
+                      alt=""
+                      aria-hidden
+                      loading="lazy"
+                      className="h-full w-full object-contain p-4"
+                    />
+                  </div>
+                )}
+                <p className="mt-3 text-sm leading-relaxed" style={mutedTextStyle}>
+                  {item.content}
+                </p>
+              </motion.li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       ref={sectionRef}
       // The original pads this 7% top and bottom, which on a wide screen is
       // ~100px of empty band either side of a section that is already mostly
       // empty scroll runway.
-      className="relative h-[200vw] w-full max-[1025px]:h-[400vh] max-md:h-[400vh]"
+      className="relative h-[200vw] w-full"
       style={sectionStyle}
     >
       {/* Original: `top-[10%] h-screen w-screen pt-[5%]`. The track is only
@@ -320,7 +387,7 @@ export function VaultTimeline({
           ref={wholeSliderRef}
           // Taller than the original's 30vw: each milestone now carries its
           // own artwork above the title, which the original had no room for.
-          className="mr-[2vw] flex h-[44vw] items-center gap-[5vw] px-[5vw] max-[1025px]:h-[70vh] max-[1025px]:w-[400vw] max-[1025px]:flex-col max-[1025px]:items-start max-[1025px]:gap-[2vw] max-[1025px]:px-[5vw] max-md:h-[80vh] max-md:w-[800vw] max-md:px-[7vw]"
+          className="mr-[2vw] flex h-[44vw] items-center gap-[5vw] px-[5vw]"
           style={{ width: `${trackVw}vw` }}
         >
           {imageUrl && (
