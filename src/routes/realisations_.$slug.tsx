@@ -1,7 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Eyebrow, PageShell } from "@/components/site-chrome";
 import { SplitButton } from "@/components/ui/split-button";
-import { FadeUp, FloatingCircleLink, ScrollTimeline } from "@/components/scroll-fx";
+import { FadeUp, FloatingCircleLink } from "@/components/scroll-fx";
+import { HorizontalTimeline } from "@/components/ui/horizontal-timeline";
 import StackSpread, { type StackSpreadCard } from "@/components/ui/stack-spread";
 import { ProjectTimeline } from "@/components/project-timeline";
 import { PROJECT_STEPS } from "@/lib/project-steps";
@@ -269,19 +270,14 @@ function ProjectDetail() {
       </section>
 
       {slug === "residences-missimi" ? (
-        <ScrollTimeline
+        <HorizontalTimeline
           items={steps}
           className="pb-16 lg:pb-24"
-          renderLabel={(_step, i) => `Étape ${String(i + 1).padStart(2, "0")}`}
-          renderImage={(step) => (
-            <img src={step.image} alt={step.title} className="h-full w-full object-contain p-6" />
-          )}
+          getLabel={(_step, i) => String(i + 1).padStart(2, "0")}
           renderContent={(step) => (
             <div>
-              <h3 className="font-display text-xl font-bold lg:text-2xl">{step.title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground lg:text-base">
-                {step.text}
-              </p>
+              <h3 className="font-display text-lg font-bold lg:text-xl">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
             </div>
           )}
         />
