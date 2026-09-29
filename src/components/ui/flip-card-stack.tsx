@@ -15,7 +15,8 @@
  * writes to the same transform would be clobbered.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { motion, useInView } from "motion/react";
+import { MousePointerClick } from "lucide-react";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 
@@ -59,8 +60,12 @@ export function FlipCardStack({
 }) {
   const [active, setActive] = useState(0);
   const [spread, setSpread] = useState(false);
+  // Whether the visitor has actually picked a frame yet. Until they do, the
+  // component keeps advertising that it is interactive.
+  const [touched, setTouched] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const pending = useRef<ReturnType<typeof Flip.getState> | null>(null);
+  const inView = useInView(root, { once: true, margin: "-25% 0px -25% 0px" });
 
   const capture = () => {
     if (!root.current) return;
@@ -88,6 +93,16 @@ export function FlipCardStack({
 
   const current = items[active];
   const rest = items.map((item, i) => ({ item, i })).filter(({ i }) => i !== active);
+
+  // Fan the deck open by itself once the section is on screen. Most visitors
+  // scroll straight past a static pile without realising it responds to a
+  // click, so the reveal can't be the thing gated behind the interaction —
+  // clicking is left to choose between frames, not to unlock the content.
+  useEffect(() => {
+    if (!inView || spread) return;
+    capture();
+    setSpread(true);
+  }, [inView, spread]);
 
   const toggle = () => {
     capture();
@@ -130,13 +145,18 @@ export function FlipCardStack({
             onMouseDown={holdScroll}
             onClick={() => {
               capture();
+              setTouched(true);
               if (spread) setActive(i);
               else setSpread(true);
             }}
             aria-label={spread ? `Afficher : ${item.title}` : "Déplier la pile de photos"}
             data-flip-id={item.src}
-            className={`group h-[86px] w-[72px] cursor-pointer overflow-hidden border border-border shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)] transition-colors duration-300 hover:border-primary lg:h-[104px] lg:w-[88px] ${
+            className={`group h-[86px] w-[72px] cursor-pointer overflow-hidden border shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)] transition-colors duration-300 hover:border-primary lg:h-[104px] lg:w-[88px] ${
               spread ? "relative" : "absolute"
+            } ${
+              // Until the visitor picks something, the frames wear the accent
+              // colour so they read as controls rather than decoration.
+              touched ? "border-border" : "animate-pulse border-primary"
             }`}
             style={{
               borderRadius: `${radius}px`,
@@ -231,16 +251,18 @@ export function FlipCardStack({
           )}
         </motion.div>
 
-        {!spread && (
-          <button
-            type="button"
-            onMouseDown={holdScroll}
-            onClick={toggle}
-            className="group/cta mt-8 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary"
+        {/* Explicit instruction, not just a hover affordance: visitors were
+            scrolling past without realising the frames were clickable. */}
+        {!touched && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-8 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary"
           >
-            <span className="h-px w-8 bg-primary transition-all duration-300 group-hover/cta:w-12" />
-            Déplier la pile
-          </button>
+            <MousePointerClick className="h-4 w-4 shrink-0 animate-bounce" aria-hidden />
+            Cliquez une vignette pour l’afficher
+          </motion.p>
         )}
       </div>
 

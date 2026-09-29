@@ -15,11 +15,6 @@ import {
 } from "@/components/scroll-fx";
 import { StackedProjects } from "@/components/ui/stacked-projects";
 import { FlipCardStack, type FlipCardItem } from "@/components/ui/flip-card-stack";
-import resultFacadeHero from "@/assets/results/result-facade-hero.webp";
-import resultAerial from "@/assets/results/result-aerial.webp";
-import resultVillaPool from "@/assets/results/result-villa-pool.webp";
-import resultRooftop from "@/assets/results/result-rooftop.webp";
-import resultInterior from "@/assets/results/result-interior.webp";
 import heroImage from "@/assets/lahlou-hero.webp";
 import craftImage from "@/assets/lahlou-craft.webp";
 import projectImage from "@/assets/lahlou-project.webp";
@@ -153,54 +148,6 @@ const methodCards: FlipCardItem[] = steps.map((s) => ({
   description: s.text,
   tags: s.points,
 }));
-
-const galleryCards: FlipCardItem[] = [
-  {
-    src: resultFacadeHero,
-    alt: "Façade d’une résidence livrée à Agadir, lumière du soir",
-    category: "Résidentiel",
-    series: "Chantiers livrés",
-    title: "Résidences MISSIMI",
-    description:
-      "Un ensemble résidentiel mené du terrassement aux enduits de façade. Les balcons, les garde-corps et les finitions extérieures ont été repris jusqu’au dernier niveau avant réception.",
-  },
-  {
-    src: resultAerial,
-    alt: "Vue aérienne d’un ensemble résidentiel livré",
-    category: "Résidentiel",
-    series: "Gros œuvre",
-    title: "Immeuble R+5",
-    description:
-      "Une ossature en dalle post-tension, montée niveau par niveau avec suivi de la prise du béton. Les grandes portées ont permis de dégager les espaces communs en rez-de-chaussée.",
-  },
-  {
-    src: resultVillaPool,
-    alt: "Villa avec piscine livrée à Agadir",
-    category: "Résidentiel",
-    series: "Villas",
-    title: "Villas avec piscines",
-    description:
-      "Trois villas livrées clé en main, terrassement et gros œuvre compris. Les bassins ont été coulés et étanchés par nos équipes, puis raccordés aux réseaux du terrain.",
-  },
-  {
-    src: resultRooftop,
-    alt: "Terrasse en toiture avec vue sur la ville",
-    category: "Finitions",
-    series: "Toitures",
-    title: "Terrasses et toitures",
-    description:
-      "Étanchéité, forme de pente et revêtement posés sur une toiture accessible. La terrasse a été remise prête à l’usage, garde-corps et évacuations vérifiés.",
-  },
-  {
-    src: resultInterior,
-    alt: "Intérieur d’un appartement livré, prêt à emménager",
-    category: "Second œuvre",
-    series: "Aménagement",
-    title: "Appartements livrés",
-    description:
-      "Cloisons, réseaux électriques, plomberie et revêtements de sol posés selon les plans validés. Chaque lot est vérifié en check-list avant la remise des clés.",
-  },
-];
 
 // Hoisted to module scope on purpose: the homepage re-renders on every FAQ
 // toggle, and an inline .map() here would hand StackedProjects a new array
@@ -520,23 +467,6 @@ function Index() {
             ))}
           </div>
         </div>
-      </section>
-
-      <section id="galerie" className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-28">
-        <FadeUp>
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <Eyebrow label="Galerie" />
-              <h2 className="mt-6 font-display text-[32px] font-bold leading-[1.05] lg:text-[52px]">
-                Ce que ça donne, <span className="text-primary">livré</span>.
-              </h2>
-            </div>
-            <SplitButton href="/realisations">Voir tous les chantiers</SplitButton>
-          </div>
-        </FadeUp>
-        <FadeUp delay={0.1} className="mt-14 lg:mt-20">
-          <FlipCardStack items={galleryCards} />
-        </FadeUp>
       </section>
 
       <section className="relative mx-auto max-w-[1440px] px-5 py-20 lg:px-8 lg:py-28">
