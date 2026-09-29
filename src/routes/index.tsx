@@ -12,9 +12,9 @@ import {
   ScrollProgressBar,
   Stagger,
   StaggerItem,
-  StickySteps,
 } from "@/components/scroll-fx";
 import { StackedProjects } from "@/components/ui/stacked-projects";
+import { SplitCanvas } from "@/components/ui/split-canvas";
 import heroImage from "@/assets/lahlou-hero.webp";
 import craftImage from "@/assets/lahlou-craft.webp";
 import projectImage from "@/assets/lahlou-project.webp";
@@ -384,18 +384,10 @@ function Index() {
           </FadeUp>
         </div>
         <div className="relative mt-16 lg:mt-20">
-          <StickySteps
-            steps={steps}
-            renderImage={(s) => (
-              <img
-                src={s.image}
-                alt={s.title}
-                loading="lazy"
-                width={1200}
-                height={900}
-                className="h-full w-full border border-border object-cover"
-              />
-            )}
+          <SplitCanvas
+            sections={steps}
+            getImage={(s) => s.image}
+            getAlt={(s) => s.title}
             renderContent={(s) => (
               <div>
                 <span className="font-display text-3xl font-bold text-muted-foreground/40">
