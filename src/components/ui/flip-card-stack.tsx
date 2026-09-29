@@ -15,6 +15,7 @@
  * writes to the same transform would be clobbered.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import gsap from "gsap";
 import { Flip } from "gsap/Flip";
 
@@ -74,6 +75,9 @@ export function FlipCardStack({
       ease: "power3.inOut",
       absolute: true,
       nested: true,
+      // The deck peels open card by card rather than every frame moving at
+      // once, which is most of what makes the fan read as deliberate.
+      stagger: reduce ? 0 : 0.05,
     });
     pending.current = null;
   }, [active, spread, duration]);
@@ -114,7 +118,7 @@ export function FlipCardStack({
             }}
             aria-label={spread ? `Afficher : ${item.title}` : "Déplier la pile de photos"}
             data-flip-id={item.src}
-            className={`h-[86px] w-[72px] cursor-pointer overflow-hidden border border-border lg:h-[104px] lg:w-[88px] ${
+            className={`group h-[86px] w-[72px] cursor-pointer overflow-hidden border border-border shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)] transition-colors duration-300 hover:border-primary lg:h-[104px] lg:w-[88px] ${
               spread ? "relative" : "absolute"
             }`}
             style={{
@@ -133,12 +137,14 @@ export function FlipCardStack({
                 transform: spread ? "rotate(0deg)" : `rotate(${(order + 1) * stackRotate}deg)`,
               }}
             >
+              {/* hover lives on the image: the frame's transform belongs to
+                  Flip and the tilt belongs to the span */}
               <img
                 src={item.src}
                 alt={item.alt}
                 loading="lazy"
                 draggable={false}
-                className="h-full w-full object-cover"
+                className="h-full w-full scale-105 object-cover brightness-[0.88] saturate-[0.85] transition duration-500 group-hover:scale-100 group-hover:brightness-100 group-hover:saturate-100"
               />
             </span>
           </button>
@@ -146,36 +152,73 @@ export function FlipCardStack({
       </div>
 
       {/* copy */}
-      <div className="order-3 lg:order-2">
-        <p className="font-display text-sm font-bold tracking-tight">
+      <div className="relative order-3 lg:order-2">
+        {/* oversized index sitting behind the title, same ghosted-number
+            treatment the stacked project cards use */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-10 left-0 select-none font-display text-[120px] font-bold leading-none text-foreground/[0.04] lg:-top-16 lg:text-[180px]"
+        >
           {String(active + 1).padStart(2, "0")}
-          <span className="text-muted-foreground"> / {String(items.length).padStart(2, "0")}</span>
-        </p>
-        <h3 className="mt-6 font-display text-[32px] font-bold leading-[1.05] lg:text-[52px]">
-          {current?.title}
-        </h3>
-        <p className="mt-6 text-sm text-muted-foreground">
-          {current?.category} / {current?.series} / {String(active + 1).padStart(2, "0")}
-        </p>
-        <p className="mt-5 max-w-md text-base leading-relaxed lg:text-lg">{current?.description}</p>
-        {current?.tags && current.tags.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-2">
-            {current.tags.map((t) => (
-              <span
-                key={t}
-                className="block border border-border bg-secondary px-4 py-2 text-xs font-semibold text-muted-foreground"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        )}
+        </span>
+
+        {/* progress rail */}
+        <div className="relative flex items-center gap-2">
+          {items.map((item, i) => (
+            <span
+              key={item.src}
+              className={`h-[3px] transition-all duration-500 ${
+                i === active ? "w-8 bg-primary" : "w-3 bg-border"
+              }`}
+            />
+          ))}
+          <span className="ml-2 font-display text-xs font-bold tracking-tight text-muted-foreground">
+            {String(active + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+          </span>
+        </div>
+
+        {/* keyed on `active` so each pick remounts and replays the entrance —
+            without this the copy snapped between cards while the art animated */}
+        <motion.div
+          key={active}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
+          className="relative"
+        >
+          <p className="mt-7 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+            {current?.category}
+            <span className="text-border">/</span>
+            {current?.series}
+          </p>
+          <h3 className="mt-4 font-display text-[30px] font-bold leading-[1.05] lg:text-[46px]">
+            {current?.title}
+          </h3>
+          <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg">
+            {current?.description}
+          </p>
+          {current?.tags && current.tags.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              {current.tags.map((t) => (
+                <span
+                  key={t}
+                  className="block border border-border bg-secondary px-4 py-2 text-xs font-semibold text-muted-foreground"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
         {!spread && (
           <button
             type="button"
             onClick={toggle}
-            className="mt-8 text-xs font-semibold uppercase tracking-[0.14em] text-primary underline-offset-4 hover:underline"
+            className="group/cta mt-8 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary"
           >
+            <span className="h-px w-8 bg-primary transition-all duration-300 group-hover/cta:w-12" />
             Déplier la pile
           </button>
         )}
@@ -190,16 +233,21 @@ export function FlipCardStack({
           aria-expanded={spread}
           aria-label={spread ? "Replier la pile de photos" : "Déplier la pile de photos"}
           data-flip-id={current?.src}
-          className="block aspect-[4/5] w-full cursor-pointer overflow-hidden border border-border"
+          className="group/frame block aspect-[4/5] w-full cursor-pointer overflow-hidden border border-border shadow-[0_30px_60px_-30px_rgba(0,0,0,0.45)]"
           style={{ borderRadius: `${radius}px` }}
         >
           {current && (
-            <img
+            // Motion drives the inner image; Flip owns the frame's transform,
+            // so the two never write to the same element.
+            <motion.img
               key={current.src}
               src={current.src}
               alt={current.alt}
               loading="lazy"
               draggable={false}
+              initial={{ scale: 1.12, opacity: 0.6 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="h-full w-full object-cover"
             />
           )}
