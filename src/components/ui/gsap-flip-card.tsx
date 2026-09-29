@@ -167,7 +167,11 @@ export function GsapFlipCard({
     [order],
   );
 
-  const isMobile = stageWidth > 0 && stageWidth <= 1025;
+  // Before the ResizeObserver reports, stageWidth is 0 — and the desktop stage
+  // sizes every card from it, so each one renders 0x0. Falling back to the
+  // column layout until measured keeps the server output and first paint
+  // content-complete instead of an empty block that snaps once it measures.
+  const isMobile = stageWidth === 0 || stageWidth <= 1025;
   const isNarrow = stageWidth > 0 && stageWidth < 900;
   const railCount = Math.max(items.length - 1, 0);
   const scale = isNarrow ? Math.min(1, stageWidth / 900) : 1;
@@ -478,7 +482,14 @@ export function GsapFlipCard({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-[3vw]">
+          {/* Columns from the count: a fixed 3 leaves a lone orphan on the
+              second row whenever there are 4 thumbs. */}
+          <div
+            className="grid gap-[3vw]"
+            style={{
+              gridTemplateColumns: `repeat(${Math.min(Math.max(order.length - 1, 1), 4)}, minmax(0, 1fr))`,
+            }}
+          >
             {order.slice(1).map((itemIndex) => {
               const item = items[itemIndex];
               if (!item) return null;
